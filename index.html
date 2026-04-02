@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pushup Counter</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0a0a0a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Pushups">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #0a0a0a;
+      color: #e5e5e5;
+      font-family: "SF Mono", "Fira Code", "Cascadia Code", ui-monospace, monospace;
+      padding: 1.5rem 1rem;
+      min-height: 100dvh;
+    }
+    .container { max-width: 420px; margin: 0 auto; }
+    h1 {
+      text-align: center;
+      font-size: 1.1rem;
+      letter-spacing: 0.3em;
+      color: #22c55e;
+      margin-bottom: 1.5rem;
+    }
+
+    /* Stats */
+    .stats { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; }
+    .stat {
+      flex: 1;
+      background: #141414;
+      border-radius: 10px;
+      padding: 0.75rem 0.5rem;
+      text-align: center;
+    }
+    .stat-value { font-size: 1.4rem; font-weight: 700; color: #fff; }
+    .stat-label { font-size: 0.65rem; color: #666; margin-top: 0.25rem; letter-spacing: 0.1em; text-transform: uppercase; }
+
+    /* Today */
+    .today {
+      background: #141414;
+      border-radius: 10px;
+      padding: 1.25rem;
+      text-align: center;
+      margin-bottom: 1.5rem;
+    }
+    .today-date { font-size: 0.75rem; color: #666; margin-bottom: 0.5rem; }
+    .today-count { font-size: 3rem; font-weight: 700; color: #fff; margin-bottom: 0.75rem; }
+    .today-buttons { display: flex; gap: 0.75rem; justify-content: center; }
+    .today-buttons button {
+      width: 56px; height: 56px;
+      border-radius: 50%;
+      border: 2px solid #333;
+      background: transparent;
+      color: #e5e5e5;
+      font-size: 1.5rem;
+      font-family: inherit;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .today-buttons button:active { transform: scale(0.92); }
+    .today-buttons .btn-add { border-color: #22c55e; color: #22c55e; }
+    .today-buttons .btn-add:active { background: #22c55e22; }
+    .today-buttons .btn-sub:active { background: #ffffff11; }
+
+    /* Calendar */
+    .cal-nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 0.75rem;
+    }
+    .cal-nav button {
+      background: none; border: none; color: #666;
+      font-size: 1.2rem; cursor: pointer; padding: 0.25rem 0.5rem;
+      font-family: inherit;
+    }
+    .cal-nav button:hover { color: #e5e5e5; }
+    .cal-title { font-size: 0.85rem; color: #999; }
+    .cal-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 4px;
+      text-align: center;
+    }
+    .cal-dow {
+      font-size: 0.6rem;
+      color: #444;
+      padding: 0.25rem 0;
+      text-transform: uppercase;
+    }
+    .cal-day {
+      aspect-ratio: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      border-radius: 8px;
+      font-size: 0.75rem;
+      color: #555;
+      position: relative;
+    }
+    .cal-day.current-month { color: #999; }
+    .cal-day.has-data {
+      background: #22c55e22;
+      color: #22c55e;
+      font-weight: 600;
+    }
+    .cal-day.is-today {
+      outline: 2px solid #22c55e;
+      outline-offset: -2px;
+    }
+    .cal-day .day-count {
+      font-size: 0.5rem;
+      color: #22c55e99;
+      margin-top: 1px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>PUSHUP COUNTER</h1>
+
+    <div class="stats">
+      <div class="stat">
+        <div class="stat-value" id="total">0</div>
+        <div class="stat-label">Total</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value" id="streak">0</div>
+        <div class="stat-label">Streak</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value" id="since">&mdash;</div>
+        <div class="stat-label">Since</div>
+      </div>
+    </div>
+
+    <div class="today">
+      <div class="today-date" id="today-date"></div>
+      <div class="today-count" id="today-count">0</div>
+      <div class="today-buttons">
+        <button class="btn-sub" onclick="addPushups(-1)">&minus;</button>
+        <button class="btn-add" onclick="addPushups(1)">+</button>
+      </div>
+    </div>
+
+    <div class="calendar">
+      <div class="cal-nav">
+        <button onclick="changeMonth(-1)">&larr;</button>
+        <span class="cal-title" id="cal-title"></span>
+        <button onclick="changeMonth(1)">&rarr;</button>
+      </div>
+      <div class="cal-grid" id="cal-grid"></div>
+    </div>
+  </div>
+
+  <script>
+    let data = {};
+    let viewYear, viewMonth;
+
+    function loadData() {
+      try { data = JSON.parse(localStorage.getItem('pushups')) || {}; }
+      catch { data = {}; }
+    }
+
+    function saveData() {
+      localStorage.setItem('pushups', JSON.stringify(data));
+    }
+
+    function dateKey(d) {
+      return d.getFullYear() + '-' +
+        String(d.getMonth() + 1).padStart(2, '0') + '-' +
+        String(d.getDate()).padStart(2, '0');
+    }
+
+    function todayKey() { return dateKey(new Date()); }
+
+    function addPushups(n) {
+      const key = todayKey();
+      const cur = (data[key] || 0) + n;
+      if (cur <= 0) delete data[key];
+      else data[key] = cur;
+      saveData();
+      render();
+    }
+
+    function getTotal() {
+      return Object.values(data).reduce((s, v) => s + v, 0);
+    }
+
+    function getStreak() {
+      let d = new Date();
+      let streak = 0;
+      // If today has no entry, start from yesterday
+      if (!data[dateKey(d)]) d.setDate(d.getDate() - 1);
+      while (data[dateKey(d)]) {
+        streak++;
+        d.setDate(d.getDate() - 1);
+      }
+      return streak;
+    }
+
+    function getStartDate() {
+      const keys = Object.keys(data).sort();
+      if (!keys.length) return '\u2014';
+      const [y, m, d] = keys[0].split('-');
+      return `${d}.${m}.${y}`;
+    }
+
+    function renderStats() {
+      document.getElementById('total').textContent = getTotal();
+      document.getElementById('streak').textContent = getStreak();
+      document.getElementById('since').textContent = getStartDate();
+    }
+
+    function renderToday() {
+      const now = new Date();
+      const opts = { weekday: 'long', day: 'numeric', month: 'long' };
+      document.getElementById('today-date').textContent =
+        now.toLocaleDateString('en-US', opts);
+      document.getElementById('today-count').textContent = data[todayKey()] || 0;
+    }
+
+    function renderCalendar() {
+      const months = ['January','February','March','April','May','June',
+        'July','August','September','October','November','December'];
+      document.getElementById('cal-title').textContent =
+        months[viewMonth] + ' ' + viewYear;
+
+      const grid = document.getElementById('cal-grid');
+      grid.innerHTML = '';
+
+      // Day-of-week headers (Mon first)
+      const dows = ['Mo','Tu','We','Th','Fr','Sa','Su'];
+      dows.forEach(d => {
+        const el = document.createElement('div');
+        el.className = 'cal-dow';
+        el.textContent = d;
+        grid.appendChild(el);
+      });
+
+      const firstDay = new Date(viewYear, viewMonth, 1);
+      const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
+      // Monday=0 offset
+      let startOffset = (firstDay.getDay() + 6) % 7;
+
+      const today = todayKey();
+
+      // Previous month trailing days
+      const prevDays = new Date(viewYear, viewMonth, 0).getDate();
+      for (let i = startOffset - 1; i >= 0; i--) {
+        const day = prevDays - i;
+        const d = new Date(viewYear, viewMonth - 1, day);
+        const key = dateKey(d);
+        const el = document.createElement('div');
+        el.className = 'cal-day' + (data[key] ? ' has-data' : '');
+        el.innerHTML = day + (data[key] ? `<span class="day-count">${data[key]}</span>` : '');
+        grid.appendChild(el);
+      }
+
+      // Current month days
+      for (let day = 1; day <= daysInMonth; day++) {
+        const d = new Date(viewYear, viewMonth, day);
+        const key = dateKey(d);
+        const el = document.createElement('div');
+        let cls = 'cal-day current-month';
+        if (data[key]) cls += ' has-data';
+        if (key === today) cls += ' is-today';
+        el.className = cls;
+        el.innerHTML = day + (data[key] ? `<span class="day-count">${data[key]}</span>` : '');
+        grid.appendChild(el);
+      }
+
+      // Next month leading days
+      const totalCells = startOffset + daysInMonth;
+      const remaining = (7 - (totalCells % 7)) % 7;
+      for (let day = 1; day <= remaining; day++) {
+        const d = new Date(viewYear, viewMonth + 1, day);
+        const key = dateKey(d);
+        const el = document.createElement('div');
+        el.className = 'cal-day' + (data[key] ? ' has-data' : '');
+        el.innerHTML = day + (data[key] ? `<span class="day-count">${data[key]}</span>` : '');
+        grid.appendChild(el);
+      }
+    }
+
+    function changeMonth(dir) {
+      viewMonth += dir;
+      if (viewMonth > 11) { viewMonth = 0; viewYear++; }
+      if (viewMonth < 0) { viewMonth = 11; viewYear--; }
+      renderCalendar();
+    }
+
+    function render() {
+      renderStats();
+      renderToday();
+      renderCalendar();
+    }
+
+    // Register service worker
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('./sw.js');
+    }
+
+    // Init
+    loadData();
+    const now = new Date();
+    viewYear = now.getFullYear();
+    viewMonth = now.getMonth();
+    render();
+  </script>
+</body>
+</html>
