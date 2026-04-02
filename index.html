@@ -11,129 +11,171 @@
   <meta name="apple-mobile-web-app-title" content="Pushups">
   <link rel="apple-touch-icon" href="icon-192.png">
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-      background: #0a0a0a;
-      color: #e5e5e5;
-      font-family: "SF Mono", "Fira Code", "Cascadia Code", ui-monospace, monospace;
-      padding: 1.5rem 1rem;
-      min-height: 100dvh;
+    /* ── Theme variables ── */
+    :root {
+      --bg: #0a0a0a;
+      --surface: #141414;
+      --surface2: #1e1e1e;
+      --accent: #22c55e;
+      --accent-dim: #22c55e22;
+      --text: #e5e5e5;
+      --text2: #999;
+      --text3: #555;
+      --border: #333;
+      --tab-bg: #111;
+      --loss: #22c55e;
+      --gain: #ef4444;
     }
-    .container { max-width: 420px; margin: 0 auto; }
+    [data-theme="dark"] {
+      --bg: #050505;
+      --surface: #0d0d0d;
+      --surface2: #141414;
+      --accent: #a855f7;
+      --accent-dim: #a855f722;
+      --text: #c9b8e8;
+      --text2: #7c6a9a;
+      --text3: #3d3050;
+      --border: #2a1f3d;
+      --tab-bg: #080808;
+    }
+    [data-theme="light"] {
+      --bg: #f0f0f0;
+      --surface: #ffffff;
+      --surface2: #e8e8e8;
+      --accent: #16a34a;
+      --accent-dim: #16a34a18;
+      --text: #111;
+      --text2: #555;
+      --text3: #aaa;
+      --border: #d0d0d0;
+      --tab-bg: #e0e0e0;
+      --loss: #16a34a;
+    }
+    [data-theme="submarine"] {
+      --bg: #051525;
+      --surface: #0a2035;
+      --surface2: #0e2d45;
+      --accent: #00d4ff;
+      --accent-dim: #00d4ff18;
+      --text: #b0e4f0;
+      --text2: #5a9ab0;
+      --text3: #2a5060;
+      --border: #0e3a50;
+      --tab-bg: #071a28;
+    }
+    [data-theme="forest"] {
+      --bg: #0d1a0f;
+      --surface: #142418;
+      --surface2: #1c3020;
+      --accent: #86efac;
+      --accent-dim: #86efac18;
+      --text: #d4edda;
+      --text2: #7aaa85;
+      --text3: #3a6040;
+      --border: #1e3d24;
+      --tab-bg: #0f1e12;
+    }
+    [data-theme="sunset"] {
+      --bg: #1a0a00;
+      --surface: #2a1200;
+      --surface2: #381800;
+      --accent: #fb923c;
+      --accent-dim: #fb923c18;
+      --text: #fde8cc;
+      --text2: #c07040;
+      --text3: #703010;
+      --border: #3d1f00;
+      --tab-bg: #1f0d00;
+    }
 
-    /* Header */
-    .header {
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: "SF Mono","Fira Code","Cascadia Code",ui-monospace,monospace;
+      min-height: 100dvh;
       display: flex;
-      align-items: center;
-      justify-content: center;
-      margin-bottom: 1.5rem;
-      position: relative;
+      flex-direction: column;
+      transition: background 0.3s, color 0.3s;
     }
-    .header h1 {
-      font-size: 1.1rem;
-      letter-spacing: 0.3em;
-      color: #22c55e;
+
+    /* ── Tab bar ── */
+    .tab-bar {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      background: var(--tab-bg);
+      border-top: 1px solid var(--border);
+      display: flex;
+      z-index: 100;
+      padding-bottom: env(safe-area-inset-bottom);
     }
-    .profile-toggle {
-      position: absolute;
-      right: 0;
+    .tab-btn {
+      flex: 1;
       background: none;
       border: none;
-      font-size: 1.3rem;
+      color: var(--text3);
+      font-family: inherit;
+      font-size: 0.6rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 0.65rem 0.5rem 0.5rem;
       cursor: pointer;
-      padding: 0.25rem;
-      line-height: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.2rem;
+      transition: color 0.15s;
       -webkit-tap-highlight-color: transparent;
     }
+    .tab-btn .tab-icon { font-size: 1.2rem; }
+    .tab-btn.active { color: var(--accent); }
 
-    /* Profile */
-    .profile {
-      background: #141414;
-      border-radius: 10px;
-      padding: 1.25rem;
+    /* ── Pages ── */
+    .page {
+      flex: 1;
+      padding: 1.5rem 1rem calc(4.5rem + env(safe-area-inset-bottom));
+      max-width: 420px;
+      width: 100%;
+      margin: 0 auto;
+    }
+    .page.hidden { display: none; }
+
+    h1 {
+      text-align: center;
+      font-size: 1.1rem;
+      letter-spacing: 0.3em;
+      color: var(--accent);
       margin-bottom: 1.5rem;
     }
-    .profile-motifs {
-      text-align: center;
-      font-size: 1.2rem;
-      margin-bottom: 0.75rem;
-      letter-spacing: 0.3em;
-    }
-    .profile-field {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      margin-bottom: 0.6rem;
-    }
-    .profile-field label {
-      font-size: 0.7rem;
-      color: #666;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      width: 55px;
-      flex-shrink: 0;
-    }
-    .profile-field input {
-      flex: 1;
-      background: #0a0a0a;
-      border: 1px solid #333;
-      border-radius: 6px;
-      color: #e5e5e5;
-      font-family: inherit;
-      font-size: 0.85rem;
-      padding: 0.4rem 0.6rem;
-    }
-    .profile-field input:focus {
-      outline: none;
-      border-color: #22c55e;
-    }
-    .profile-field input[type="number"] {
-      -moz-appearance: textfield;
-    }
-    .profile-field input::-webkit-outer-spin-button,
-    .profile-field input::-webkit-inner-spin-button {
-      -webkit-appearance: none;
-    }
-    .weight-row {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-    .weight-row input { flex: 1; }
-    .weight-delta {
-      font-size: 0.75rem;
-      font-weight: 600;
-      white-space: nowrap;
-    }
-    .weight-delta.loss { color: #22c55e; }
-    .weight-delta.gain { color: #ef4444; }
 
-    /* Stats */
-    .stats { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; }
+    /* ── Cards ── */
+    .card {
+      background: var(--surface);
+      border-radius: 12px;
+      padding: 1.25rem;
+      margin-bottom: 1rem;
+    }
+
+    /* ── Stats ── */
+    .stats { display: flex; gap: 0.5rem; margin-bottom: 1rem; }
     .stat {
       flex: 1;
-      background: #141414;
-      border-radius: 10px;
+      background: var(--surface);
+      border-radius: 12px;
       padding: 0.75rem 0.5rem;
       text-align: center;
     }
-    .stat-value { font-size: 1.4rem; font-weight: 700; color: #fff; }
-    .stat-label { font-size: 0.65rem; color: #666; margin-top: 0.25rem; letter-spacing: 0.1em; text-transform: uppercase; }
+    .stat-value { font-size: 1.4rem; font-weight: 700; color: var(--text); }
+    .stat-label { font-size: 0.6rem; color: var(--text3); margin-top: 0.25rem; letter-spacing: 0.1em; text-transform: uppercase; }
 
-    /* Selected day panel */
-    .today {
-      background: #141414;
-      border-radius: 10px;
-      padding: 1.25rem;
-      text-align: center;
-      margin-bottom: 1.5rem;
-    }
-    .today-date { font-size: 0.75rem; color: #666; margin-bottom: 0.5rem; }
+    /* ── Day panel ── */
+    .today-date { font-size: 0.75rem; color: var(--text2); margin-bottom: 0.5rem; text-align: center; }
     .today-input {
-      background: #0a0a0a;
-      border: 2px solid #333;
+      background: var(--surface2);
+      border: 2px solid var(--border);
       border-radius: 10px;
-      color: #fff;
+      color: var(--text);
       font-family: inherit;
       font-size: 3rem;
       font-weight: 700;
@@ -141,222 +183,264 @@
       width: 100%;
       max-width: 160px;
       padding: 0.25rem 0.5rem;
-      margin: 0 auto 0.5rem;
+      margin: 0 auto 0.4rem;
       display: block;
       -moz-appearance: textfield;
     }
-    .today-input:focus {
-      outline: none;
-      border-color: #22c55e;
-    }
+    .today-input:focus { outline: none; border-color: var(--accent); }
     .today-input::-webkit-outer-spin-button,
-    .today-input::-webkit-inner-spin-button {
-      -webkit-appearance: none;
-      margin: 0;
-    }
-    .today-hint {
-      font-size: 0.65rem;
-      color: #444;
+    .today-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+    .today-hint { font-size: 0.62rem; color: var(--text3); margin-bottom: 0.75rem; text-align: center; }
+    .daily-avg {
+      font-size: 0.7rem;
+      color: var(--text2);
+      text-align: center;
       margin-bottom: 0.75rem;
     }
+    .daily-avg span { color: var(--accent); font-weight: 700; }
 
-    /* Mood selector */
-    .mood-label {
-      font-size: 0.65rem;
-      color: #555;
-      text-transform: uppercase;
-      letter-spacing: 0.1em;
-      margin-bottom: 0.4rem;
-    }
-    .mood-row {
-      display: flex;
-      gap: 0.4rem;
-      justify-content: center;
-    }
+    /* ── Mood ── */
+    .mood-label { font-size: 0.62rem; color: var(--text3); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.4rem; text-align: center; }
+    .mood-row { display: flex; gap: 0.4rem; justify-content: center; }
     .mood-btn {
-      font-size: 1.4rem;
-      background: #0a0a0a;
+      font-size: 1.35rem;
+      background: var(--surface2);
       border: 2px solid transparent;
       border-radius: 10px;
-      padding: 0.35rem 0.5rem;
+      padding: 0.35rem 0.45rem;
       cursor: pointer;
       transition: all 0.15s;
       line-height: 1;
       -webkit-tap-highlight-color: transparent;
     }
-    .mood-btn:active { transform: scale(0.9); }
-    .mood-btn.active {
-      border-color: #22c55e;
-      background: #22c55e15;
-    }
+    .mood-btn:active { transform: scale(0.88); }
+    .mood-btn.active { border-color: var(--accent); background: var(--accent-dim); }
 
-    /* Calendar */
+    /* ── Calendar ── */
     .cal-nav {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
+      display: flex; align-items: center; justify-content: space-between;
       margin-bottom: 0.75rem;
     }
     .cal-nav button {
-      background: none; border: none; color: #666;
-      font-size: 1.2rem; cursor: pointer; padding: 0.25rem 0.5rem;
-      font-family: inherit;
+      background: none; border: none; color: var(--text2);
+      font-size: 1.1rem; cursor: pointer; padding: 0.25rem 0.5rem; font-family: inherit;
     }
-    .cal-nav button:hover { color: #e5e5e5; }
-    .cal-title { font-size: 0.85rem; color: #999; }
-    .cal-grid {
-      display: grid;
-      grid-template-columns: repeat(7, 1fr);
-      gap: 4px;
-      text-align: center;
-    }
-    .cal-dow {
-      font-size: 0.6rem;
-      color: #444;
-      padding: 0.25rem 0;
-      text-transform: uppercase;
-    }
+    .cal-nav button:hover { color: var(--text); }
+    .cal-title { font-size: 0.85rem; color: var(--text2); }
+    .cal-grid { display: grid; grid-template-columns: repeat(7,1fr); gap: 3px; text-align: center; }
+    .cal-dow { font-size: 0.58rem; color: var(--text3); padding: 0.2rem 0; text-transform: uppercase; }
     .cal-day {
       aspect-ratio: 1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      border-radius: 8px;
-      font-size: 0.65rem;
-      color: #555;
-      position: relative;
-      gap: 1px;
-      cursor: pointer;
-      -webkit-tap-highlight-color: transparent;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      border-radius: 7px; font-size: 0.63rem; color: var(--text3);
+      gap: 1px; cursor: pointer; -webkit-tap-highlight-color: transparent;
     }
-    .cal-day.future { cursor: default; opacity: 0.25; }
-    .cal-day.current-month { color: #999; }
-    .cal-day.has-data {
-      background: #22c55e22;
-      color: #22c55e;
-    }
-    .cal-day.is-today {
-      outline: 2px solid #22c55e;
-      outline-offset: -2px;
-    }
-    .cal-day.selected {
-      outline: 2px solid #fff;
-      outline-offset: -2px;
-    }
-    .cal-day.is-today.selected {
-      outline: 2px solid #fff;
-    }
-    .cal-day .day-num {
-      font-size: 0.6rem;
-      line-height: 1;
-    }
-    .cal-day .day-count {
-      font-size: 0.85rem;
-      font-weight: 700;
-      color: #22c55e;
-      line-height: 1;
-    }
-    .cal-day .day-mood {
-      font-size: 0.55rem;
-      line-height: 1;
-    }
+    .cal-day.future { cursor: default; opacity: 0.2; }
+    .cal-day.current-month { color: var(--text2); }
+    .cal-day.has-data { background: var(--accent-dim); color: var(--accent); }
+    .cal-day.is-today { outline: 2px solid var(--accent); outline-offset: -2px; }
+    .cal-day.selected { outline: 2px solid var(--text); outline-offset: -2px; }
+    .cal-day.is-today.selected { outline: 2px solid var(--text); }
+    .cal-day .day-num { font-size: 0.58rem; line-height: 1; }
+    .cal-day .day-count { font-size: 0.82rem; font-weight: 700; color: var(--accent); line-height: 1; }
+    .cal-day .day-mood { font-size: 0.52rem; line-height: 1; }
 
-    /* Notification banner */
-    .notif-banner {
-      background: #141414;
-      border-radius: 10px;
-      padding: 1rem 1.25rem;
-      margin-bottom: 1.5rem;
+    /* ── Notification banner ── */
+    .notif-banner { margin-bottom: 1rem; text-align: center; }
+    .notif-banner p { font-size: 0.78rem; color: var(--text2); margin-bottom: 0.75rem; line-height: 1.4; }
+    .notif-time { display: flex; align-items: center; justify-content: center; gap: 0.5rem; margin-bottom: 0.75rem; }
+    .notif-time input[type="time"] {
+      background: var(--surface2); border: 1px solid var(--border); border-radius: 6px;
+      color: var(--text); font-family: inherit; font-size: 0.85rem; padding: 0.4rem 0.6rem;
+    }
+    .notif-time label { font-size: 0.72rem; color: var(--text2); }
+    .notif-btns { display: flex; gap: 0.5rem; justify-content: center; }
+    .notif-btns button {
+      border: none; border-radius: 8px; padding: 0.5rem 1.25rem;
+      font-family: inherit; font-size: 0.72rem; cursor: pointer; transition: all 0.15s;
+    }
+    .btn-yes { background: var(--accent); color: var(--bg); font-weight: 700; }
+    .btn-no { background: var(--surface2); color: var(--text2); }
+    .notif-btns button:active { transform: scale(0.95); }
+
+    /* ── Profile page ── */
+    .profile-hero {
       text-align: center;
+      margin-bottom: 1rem;
+      font-size: 2.5rem;
+      letter-spacing: 0.15em;
     }
-    .notif-banner p {
-      font-size: 0.8rem;
-      color: #999;
-      margin-bottom: 0.75rem;
-      line-height: 1.4;
+    .profile-name-display {
+      text-align: center;
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 0.2rem;
     }
-    .notif-banner .notif-time {
+    .profile-sub {
+      text-align: center;
+      font-size: 0.7rem;
+      color: var(--text2);
+      margin-bottom: 1rem;
+    }
+    .section-title {
+      font-size: 0.62rem;
+      color: var(--text3);
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      margin-bottom: 0.6rem;
+    }
+    .pfield {
       display: flex;
       align-items: center;
-      justify-content: center;
       gap: 0.5rem;
-      margin-bottom: 0.75rem;
+      margin-bottom: 0.55rem;
     }
-    .notif-banner input[type="time"] {
-      background: #0a0a0a;
-      border: 1px solid #333;
-      border-radius: 6px;
-      color: #e5e5e5;
+    .pfield label {
+      font-size: 0.68rem;
+      color: var(--text2);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      width: 58px;
+      flex-shrink: 0;
+    }
+    .pfield input {
+      flex: 1;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      color: var(--text);
       font-family: inherit;
       font-size: 0.85rem;
       padding: 0.4rem 0.6rem;
-      text-align: center;
     }
-    .notif-banner label {
-      font-size: 0.75rem;
-      color: #666;
-    }
-    .notif-btns {
-      display: flex;
-      gap: 0.5rem;
-      justify-content: center;
-    }
-    .notif-btns button {
-      border: none;
-      border-radius: 8px;
-      padding: 0.5rem 1.25rem;
+    .pfield input:focus { outline: none; border-color: var(--accent); }
+    .pfield input[type="number"], .pfield input[type="tel"] { -moz-appearance: textfield; }
+    .pfield input::-webkit-outer-spin-button,
+    .pfield input::-webkit-inner-spin-button { -webkit-appearance: none; }
+
+    /* Gender selector */
+    .gender-row { display: flex; gap: 0.5rem; flex: 1; }
+    .gender-btn {
+      flex: 1;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      color: var(--text2);
       font-family: inherit;
-      font-size: 0.75rem;
+      font-size: 0.78rem;
+      padding: 0.4rem;
       cursor: pointer;
+      text-align: center;
       transition: all 0.15s;
+      -webkit-tap-highlight-color: transparent;
     }
-    .notif-btns .btn-yes {
-      background: #22c55e;
-      color: #0a0a0a;
-      font-weight: 600;
+    .gender-btn.active { border-color: var(--accent); color: var(--accent); background: var(--accent-dim); }
+
+    /* Weight delta */
+    .weight-wrap { display: flex; align-items: center; gap: 0.5rem; flex: 1; }
+    .weight-wrap input { flex: 1; }
+    .weight-delta { font-size: 0.72rem; font-weight: 700; white-space: nowrap; }
+    .weight-delta.loss { color: var(--loss); }
+    .weight-delta.gain { color: var(--gain); }
+
+    /* PR list */
+    .pr-row { display: flex; gap: 0.5rem; margin-bottom: 0.5rem; }
+    .pr-row input { flex: 1; }
+    .pr-add-btn {
+      background: var(--accent);
+      border: none;
+      border-radius: 7px;
+      color: var(--bg);
+      font-family: inherit;
+      font-size: 0.85rem;
+      font-weight: 700;
+      padding: 0 0.75rem;
+      cursor: pointer;
+      flex-shrink: 0;
     }
-    .notif-btns .btn-no {
-      background: #222;
-      color: #666;
+    .pr-list { display: flex; flex-direction: column; gap: 0.35rem; }
+    .pr-entry {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--surface2);
+      border-radius: 7px;
+      padding: 0.4rem 0.6rem;
+      font-size: 0.78rem;
     }
-    .notif-btns button:active { transform: scale(0.95); }
+    .pr-entry .pr-val { color: var(--accent); font-weight: 700; }
+    .pr-entry .pr-date { color: var(--text3); font-size: 0.65rem; }
+    .pr-badge {
+      font-size: 0.62rem;
+      background: var(--accent-dim);
+      color: var(--accent);
+      border-radius: 4px;
+      padding: 0.1rem 0.3rem;
+    }
+
+    /* Daily recommendation */
+    .rec-card {
+      background: var(--accent-dim);
+      border: 1px solid var(--accent);
+      border-radius: 10px;
+      padding: 0.75rem 1rem;
+      text-align: center;
+      margin-bottom: 0.6rem;
+    }
+    .rec-card .rec-num { font-size: 1.8rem; font-weight: 700; color: var(--accent); }
+    .rec-card .rec-label { font-size: 0.65rem; color: var(--text2); margin-top: 0.2rem; }
+
+    /* Theme picker */
+    .theme-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.5rem;
+    }
+    .theme-btn {
+      border: 2px solid var(--border);
+      border-radius: 10px;
+      padding: 0.6rem 0.4rem;
+      cursor: pointer;
+      text-align: center;
+      background: none;
+      font-family: inherit;
+      transition: all 0.15s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .theme-btn .theme-icon { font-size: 1.3rem; display: block; margin-bottom: 0.2rem; }
+    .theme-btn .theme-name { font-size: 0.58rem; color: var(--text2); text-transform: uppercase; letter-spacing: 0.06em; }
+    .theme-btn.active { border-color: var(--accent); }
+    .theme-btn:active { transform: scale(0.95); }
+
+    .save-btn {
+      width: 100%;
+      background: var(--accent);
+      border: none;
+      border-radius: 10px;
+      color: var(--bg);
+      font-family: inherit;
+      font-size: 0.85rem;
+      font-weight: 700;
+      padding: 0.75rem;
+      cursor: pointer;
+      letter-spacing: 0.05em;
+      margin-top: 0.5rem;
+      transition: opacity 0.15s;
+    }
+    .save-btn:active { opacity: 0.8; }
 
     .hidden { display: none !important; }
   </style>
 </head>
 <body>
-  <div class="container">
-    <div class="header">
-      <h1>PUSHUP COUNTER</h1>
-      <button class="profile-toggle" onclick="toggleProfile()">👤</button>
-    </div>
 
-    <!-- Profile -->
-    <div class="profile hidden" id="profile">
-      <div class="profile-motifs">💪 🏋️ 🔥 ⚡ ✨</div>
-      <div class="profile-field">
-        <label>Name</label>
-        <input type="text" id="prof-name" placeholder="Your name"
-          oninput="saveProfile()">
-      </div>
-      <div class="profile-field">
-        <label>Age</label>
-        <input type="number" id="prof-age" inputmode="numeric" placeholder="25"
-          oninput="saveProfile()">
-      </div>
-      <div class="profile-field">
-        <label>Weight</label>
-        <div class="weight-row">
-          <input type="number" id="prof-weight" inputmode="decimal" placeholder="kg" step="0.1"
-            onchange="updateWeight()">
-          <span class="weight-delta" id="weight-delta"></span>
-        </div>
-      </div>
-    </div>
+  <!-- ── HOME PAGE ── -->
+  <div class="page" id="page-home">
+    <h1>PUSHUP COUNTER</h1>
 
-    <!-- Notification prompt -->
-    <div class="notif-banner hidden" id="notif-banner">
+    <!-- Notification banner -->
+    <div class="card notif-banner hidden" id="notif-banner">
       <p>Get a daily reminder to do your push-ups?</p>
       <div class="notif-time">
         <label for="notif-hour">Remind at</label>
@@ -368,6 +452,7 @@
       </div>
     </div>
 
+    <!-- Stats -->
     <div class="stats">
       <div class="stat">
         <div class="stat-value" id="total">0</div>
@@ -383,18 +468,22 @@
       </div>
     </div>
 
-    <div class="today">
+    <!-- Day entry -->
+    <div class="card">
       <div class="today-date" id="today-date"></div>
       <input type="tel" class="today-input" id="today-input"
         inputmode="numeric" pattern="[0-9]*" placeholder="0"
         oninput="this.value=this.value.replace(/[^0-9]/g,'')"
-        onchange="setPushups(this.value)" onkeydown="if(event.key==='Enter'){this.blur()}">
+        onchange="setPushups(this.value)"
+        onkeydown="if(event.key==='Enter'){this.blur()}">
       <div class="today-hint">tap to type count</div>
+      <div class="daily-avg" id="daily-avg"></div>
       <div class="mood-label">how are you feeling?</div>
       <div class="mood-row" id="mood-row"></div>
     </div>
 
-    <div class="calendar">
+    <!-- Calendar -->
+    <div class="card">
       <div class="cal-nav">
         <button onclick="changeMonth(-1)">&larr;</button>
         <span class="cal-title" id="cal-title"></span>
@@ -404,85 +493,285 @@
     </div>
   </div>
 
+  <!-- ── PROFILE PAGE ── -->
+  <div class="page hidden" id="page-profile">
+    <h1>PROFILE</h1>
+
+    <!-- Hero -->
+    <div class="profile-hero" id="prof-hero">💪</div>
+    <div class="profile-name-display" id="prof-name-display"></div>
+    <div class="profile-sub" id="prof-sub"></div>
+
+    <!-- Info -->
+    <div class="card">
+      <div class="section-title">About you</div>
+      <div class="pfield">
+        <label>Name</label>
+        <input type="text" id="prof-name" placeholder="Your name">
+      </div>
+      <div class="pfield">
+        <label>Gender</label>
+        <div class="gender-row">
+          <button class="gender-btn" id="gender-m" onclick="setGender('m')">♂ Man</button>
+          <button class="gender-btn" id="gender-f" onclick="setGender('f')">♀ Woman</button>
+        </div>
+      </div>
+      <div class="pfield">
+        <label>Age</label>
+        <input type="tel" id="prof-age" inputmode="numeric" placeholder="25"
+          oninput="this.value=this.value.replace(/[^0-9]/g,'')">
+      </div>
+      <div class="pfield">
+        <label>Height</label>
+        <input type="tel" id="prof-height" inputmode="numeric" placeholder="cm"
+          oninput="this.value=this.value.replace(/[^0-9]/g,'')">
+      </div>
+      <div class="pfield">
+        <label>Weight</label>
+        <div class="weight-wrap">
+          <input type="tel" id="prof-weight" inputmode="decimal" placeholder="kg"
+            oninput="this.value=this.value.replace(/[^0-9.]/g,'')">
+          <span class="weight-delta" id="weight-delta"></span>
+        </div>
+      </div>
+      <button class="save-btn" onclick="saveProfile()">Save profile</button>
+    </div>
+
+    <!-- Daily recommendation -->
+    <div id="rec-section" class="hidden">
+      <div class="rec-card">
+        <div class="rec-num" id="rec-num">—</div>
+        <div class="rec-label" id="rec-label">recommended daily push-ups</div>
+      </div>
+    </div>
+
+    <!-- PR -->
+    <div class="card">
+      <div class="section-title">Personal records 🏆</div>
+      <div class="pr-row">
+        <input type="tel" id="pr-input" inputmode="numeric" placeholder="reps in one try"
+          oninput="this.value=this.value.replace(/[^0-9]/g,'')"
+          onkeydown="if(event.key==='Enter'){addPR()}">
+        <button class="pr-add-btn" onclick="addPR()">Add</button>
+      </div>
+      <div class="pr-list" id="pr-list"></div>
+    </div>
+
+    <!-- Themes -->
+    <div class="card">
+      <div class="section-title">Theme</div>
+      <div class="theme-grid" id="theme-grid"></div>
+    </div>
+  </div>
+
+  <!-- ── TAB BAR ── -->
+  <div class="tab-bar">
+    <button class="tab-btn active" id="tab-home" onclick="switchTab('home')">
+      <span class="tab-icon">💪</span>
+      <span>Tracker</span>
+    </button>
+    <button class="tab-btn" id="tab-profile" onclick="switchTab('profile')">
+      <span class="tab-icon">👤</span>
+      <span>Profile</span>
+    </button>
+  </div>
+
   <script>
-    let data = {};
-    let moods = {};
-    let profile = { name: '', age: '', weight: '', weightHistory: [] };
-    let viewYear, viewMonth;
-    let selectedKey;
-    let profileOpen = false;
+    // ── State ──
+    let data = {}, moods = {};
+    let profile = { name: '', gender: '', age: '', height: '', weight: '', weightHistory: [], prs: [] };
+    let viewYear, viewMonth, selectedKey;
+    let currentTab = 'home';
+    let currentTheme = 'default';
 
-    const MOODS = ['💀', '😓', '😐', '😊', '🔥'];
+    const MOODS = ['💀','😓','😐','😊','🔥'];
 
-    // --- Data ---
-    function loadData() {
-      try { data = JSON.parse(localStorage.getItem('pushups')) || {}; } catch { data = {}; }
-      try { moods = JSON.parse(localStorage.getItem('pushups_moods')) || {}; } catch { moods = {}; }
+    const THEMES = [
+      { id: 'default', icon: '🌿', name: 'Cute' },
+      { id: 'dark',    icon: '🌑', name: 'Dark' },
+      { id: 'light',   icon: '☀️',  name: 'Light' },
+      { id: 'submarine', icon: '🌊', name: 'Sub' },
+      { id: 'forest',  icon: '🌲', name: 'Forest' },
+      { id: 'sunset',  icon: '🔥', name: 'Sunset' },
+    ];
+
+    // daily recommended push-ups by gender (average fitness level)
+    const REC = { m: 50, f: 30 };
+
+    // ── Load / Save ──
+    function loadAll() {
+      try { data    = JSON.parse(localStorage.getItem('pushups'))         || {}; } catch { data = {}; }
+      try { moods   = JSON.parse(localStorage.getItem('pushups_moods'))   || {}; } catch { moods = {}; }
       try {
         const p = JSON.parse(localStorage.getItem('pushups_profile'));
-        if (p) profile = { name: '', age: '', weight: '', weightHistory: [], ...p };
+        if (p) profile = { name:'', gender:'', age:'', height:'', weight:'', weightHistory:[], prs:[], ...p };
       } catch {}
+      currentTheme = localStorage.getItem('pushups_theme') || 'default';
+      applyTheme(currentTheme);
     }
 
-    function saveData() { localStorage.setItem('pushups', JSON.stringify(data)); }
-    function saveMoods() { localStorage.setItem('pushups_moods', JSON.stringify(moods)); }
-    function saveProfileData() { localStorage.setItem('pushups_profile', JSON.stringify(profile)); }
+    function saveData()    { localStorage.setItem('pushups',         JSON.stringify(data)); }
+    function saveMoods()   { localStorage.setItem('pushups_moods',   JSON.stringify(moods)); }
+    function saveProfileD(){ localStorage.setItem('pushups_profile', JSON.stringify(profile)); }
 
-    function dateKey(d) {
-      return d.getFullYear() + '-' +
-        String(d.getMonth() + 1).padStart(2, '0') + '-' +
-        String(d.getDate()).padStart(2, '0');
+    // ── Tabs ──
+    function switchTab(tab) {
+      currentTab = tab;
+      document.getElementById('page-home').classList.toggle('hidden', tab !== 'home');
+      document.getElementById('page-profile').classList.toggle('hidden', tab !== 'profile');
+      document.getElementById('tab-home').classList.toggle('active', tab === 'home');
+      document.getElementById('tab-profile').classList.toggle('active', tab === 'profile');
+      if (tab === 'profile') renderProfilePage();
     }
 
-    function todayKey() { return dateKey(new Date()); }
-
-    // --- Profile ---
-    function toggleProfile() {
-      profileOpen = !profileOpen;
-      const el = document.getElementById('profile');
-      el.classList.toggle('hidden', !profileOpen);
-      if (profileOpen) renderProfile();
+    // ── Theme ──
+    function applyTheme(id) {
+      document.documentElement.setAttribute('data-theme', id === 'default' ? '' : id);
+      currentTheme = id;
+      localStorage.setItem('pushups_theme', id);
     }
 
-    function renderProfile() {
-      document.getElementById('prof-name').value = profile.name;
-      document.getElementById('prof-age').value = profile.age;
-      document.getElementById('prof-weight').value = profile.weight;
-      renderWeightDelta();
+    function renderThemeGrid() {
+      const grid = document.getElementById('theme-grid');
+      grid.innerHTML = '';
+      THEMES.forEach(t => {
+        const btn = document.createElement('button');
+        btn.className = 'theme-btn' + (currentTheme === t.id ? ' active' : '');
+        btn.innerHTML = `<span class="theme-icon">${t.icon}</span><span class="theme-name">${t.name}</span>`;
+        btn.addEventListener('click', () => { applyTheme(t.id); renderThemeGrid(); });
+        grid.appendChild(btn);
+      });
+    }
+
+    // ── Profile ──
+    function setGender(g) {
+      profile.gender = g;
+      document.getElementById('gender-m').classList.toggle('active', g === 'm');
+      document.getElementById('gender-f').classList.toggle('active', g === 'f');
     }
 
     function saveProfile() {
-      profile.name = document.getElementById('prof-name').value;
-      profile.age = document.getElementById('prof-age').value;
-      saveProfileData();
+      profile.name   = document.getElementById('prof-name').value.trim();
+      profile.age    = document.getElementById('prof-age').value;
+      profile.height = document.getElementById('prof-height').value;
+      const wVal = parseFloat(document.getElementById('prof-weight').value);
+      if (!isNaN(wVal) && wVal > 0) {
+        profile.weight = wVal;
+        // Only push if weight changed
+        const h = profile.weightHistory;
+        if (!h.length || h[h.length-1].value !== wVal) {
+          h.push({ date: todayKey(), value: wVal });
+        }
+      }
+      saveProfileD();
+      renderProfilePage();
     }
 
-    function updateWeight() {
-      const val = parseFloat(document.getElementById('prof-weight').value);
-      if (isNaN(val) || val <= 0) return;
-      profile.weight = val;
-      profile.weightHistory.push({ date: todayKey(), value: val });
-      saveProfileData();
-      renderWeightDelta();
+    function addPR() {
+      const inp = document.getElementById('pr-input');
+      const n = parseInt(inp.value, 10);
+      if (!n || n <= 0) return;
+      if (!profile.prs) profile.prs = [];
+      profile.prs.push({ date: todayKey(), reps: n });
+      profile.prs.sort((a, b) => b.reps - a.reps);
+      inp.value = '';
+      saveProfileD();
+      renderPRList();
     }
 
-    function renderWeightDelta() {
-      const el = document.getElementById('weight-delta');
+    function renderPRList() {
+      const list = document.getElementById('pr-list');
+      list.innerHTML = '';
+      const prs = profile.prs || [];
+      if (!prs.length) {
+        list.innerHTML = '<div style="font-size:0.72rem;color:var(--text3);text-align:center;padding:0.5rem">No records yet</div>';
+        return;
+      }
+      prs.forEach((pr, i) => {
+        const el = document.createElement('div');
+        el.className = 'pr-entry';
+        el.innerHTML = `
+          <span>${i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : '▸'}</span>
+          <span class="pr-val">${pr.reps} reps</span>
+          <span class="pr-date">${pr.date}</span>
+          ${i === 0 ? '<span class="pr-badge">PR</span>' : ''}
+        `;
+        list.appendChild(el);
+      });
+    }
+
+    function renderProfilePage() {
+      // Populate inputs
+      document.getElementById('prof-name').value   = profile.name;
+      document.getElementById('prof-age').value    = profile.age;
+      document.getElementById('prof-height').value = profile.height;
+      document.getElementById('prof-weight').value = profile.weight;
+      document.getElementById('gender-m').classList.toggle('active', profile.gender === 'm');
+      document.getElementById('gender-f').classList.toggle('active', profile.gender === 'f');
+
+      // Hero motifs per gender
+      const heroMap = { m: '💪 🏋️ ⚡', f: '✨ 💪 🌸', '': '💪 🔥 ⚡' };
+      document.getElementById('prof-hero').textContent = heroMap[profile.gender] || heroMap[''];
+
+      // Name display
+      document.getElementById('prof-name-display').textContent =
+        profile.name || 'Your name';
+      const parts = [];
+      if (profile.gender) parts.push(profile.gender === 'm' ? 'Man' : 'Woman');
+      if (profile.age)    parts.push(profile.age + ' y/o');
+      if (profile.height) parts.push(profile.height + ' cm');
+      document.getElementById('prof-sub').textContent = parts.join(' · ') || ' ';
+
+      // Weight delta
+      const wEl = document.getElementById('weight-delta');
       const h = profile.weightHistory;
-      if (!h || h.length < 2) { el.textContent = ''; return; }
-      const first = h[0].value;
-      const current = h[h.length - 1].value;
-      const diff = current - first;
-      const sign = diff > 0 ? '+' : '';
-      el.textContent = `${sign}${diff.toFixed(1)} kg`;
-      el.className = 'weight-delta ' + (diff < 0 ? 'loss' : diff > 0 ? 'gain' : '');
+      if (h && h.length >= 2) {
+        const diff = h[h.length-1].value - h[0].value;
+        const sign = diff > 0 ? '+' : '';
+        wEl.textContent = `${sign}${diff.toFixed(1)} kg`;
+        wEl.className = 'weight-delta ' + (diff < 0 ? 'loss' : 'gain');
+      } else {
+        wEl.textContent = '';
+      }
+
+      // Daily recommendation
+      const recSec = document.getElementById('rec-section');
+      if (profile.gender && REC[profile.gender]) {
+        recSec.classList.remove('hidden');
+        const rec = REC[profile.gender];
+        const avg = getAvgDaily();
+        document.getElementById('rec-num').textContent = rec;
+        document.getElementById('rec-label').textContent =
+          avg > 0
+            ? `recommended · you average ${avg} / day`
+            : 'recommended daily push-ups';
+      } else {
+        recSec.classList.add('hidden');
+      }
+
+      renderPRList();
+      renderThemeGrid();
     }
 
-    // --- Day selection & pushups ---
+    function getAvgDaily() {
+      const keys = Object.keys(data);
+      if (!keys.length) return 0;
+      const total = Object.values(data).reduce((s, v) => s + v, 0);
+      return Math.round(total / keys.length);
+    }
+
+    // ── Day / pushups ──
+    function dateKey(d) {
+      return d.getFullYear() + '-' +
+        String(d.getMonth()+1).padStart(2,'0') + '-' +
+        String(d.getDate()).padStart(2,'0');
+    }
+    function todayKey() { return dateKey(new Date()); }
+
     function selectDay(key) {
       if (key > todayKey()) return;
       selectedKey = key;
-      render();
+      renderHome();
     }
 
     function setPushups(val) {
@@ -490,53 +779,71 @@
       if (!n || n <= 0) delete data[selectedKey];
       else data[selectedKey] = n;
       saveData();
-      render();
+      renderHome();
     }
 
-    // --- Mood ---
     function setMood(emoji) {
       if (moods[selectedKey] === emoji) delete moods[selectedKey];
       else moods[selectedKey] = emoji;
       saveMoods();
-      render();
+      renderMoodRow();
+      renderCalendar();
     }
 
-    // --- Stats ---
-    function getTotal() { return Object.values(data).reduce((s, v) => s + v, 0); }
-
+    // ── Stats ──
+    function getTotal()  { return Object.values(data).reduce((s,v) => s+v, 0); }
     function getStreak() {
-      let d = new Date();
-      let streak = 0;
-      if (!data[dateKey(d)]) d.setDate(d.getDate() - 1);
-      while (data[dateKey(d)]) { streak++; d.setDate(d.getDate() - 1); }
-      return streak;
+      let d = new Date(), s = 0;
+      if (!data[dateKey(d)]) d.setDate(d.getDate()-1);
+      while (data[dateKey(d)]) { s++; d.setDate(d.getDate()-1); }
+      return s;
     }
-
     function getStartDate() {
       const keys = Object.keys(data).sort();
       if (!keys.length) return '\u2014';
-      const [y, m, d] = keys[0].split('-');
+      const [y,m,d] = keys[0].split('-');
       return `${d}.${m}.${y}`;
     }
 
-    // --- Rendering ---
-    function renderStats() {
-      document.getElementById('total').textContent = getTotal();
-      document.getElementById('streak').textContent = getStreak();
-      document.getElementById('since').textContent = getStartDate();
+    // ── Render home ──
+    function renderHome() {
+      renderStats();
+      renderDayPanel();
+      renderCalendar();
     }
 
-    function renderSelectedDay() {
-      const [y, m, d] = selectedKey.split('-').map(Number);
-      const date = new Date(y, m - 1, d);
+    function renderStats() {
+      document.getElementById('total').textContent  = getTotal();
+      document.getElementById('streak').textContent = getStreak();
+      document.getElementById('since').textContent  = getStartDate();
+    }
+
+    function renderDayPanel() {
+      const [y,m,d] = selectedKey.split('-').map(Number);
+      const date = new Date(y, m-1, d);
       const isToday = selectedKey === todayKey();
-      const opts = { weekday: 'long', day: 'numeric', month: 'long' };
-      const label = date.toLocaleDateString('en-US', opts);
+      const opts = { weekday:'long', day:'numeric', month:'long' };
       document.getElementById('today-date').textContent =
-        isToday ? 'Today \u2014 ' + label : label;
+        isToday ? 'Today \u2014 ' + date.toLocaleDateString('en-US', opts)
+                : date.toLocaleDateString('en-US', opts);
       document.getElementById('today-input').value = data[selectedKey] || '';
 
-      // Mood buttons
+      // Daily avg vs recommendation
+      const avgEl = document.getElementById('daily-avg');
+      if (profile.gender && REC[profile.gender]) {
+        const avg = getAvgDaily();
+        const rec = REC[profile.gender];
+        avgEl.innerHTML = avg > 0
+          ? `your avg: <span>${avg}</span> · goal: <span>${rec}</span>`
+          : `daily goal: <span>${rec}</span>`;
+      } else {
+        avgEl.textContent = '';
+      }
+
+      renderMoodRow();
+    }
+
+    function renderMoodRow() {
       const row = document.getElementById('mood-row');
       row.innerHTML = '';
       MOODS.forEach(emoji => {
@@ -551,34 +858,32 @@
     function renderCalendar() {
       const months = ['January','February','March','April','May','June',
         'July','August','September','October','November','December'];
-      document.getElementById('cal-title').textContent =
-        months[viewMonth] + ' ' + viewYear;
+      document.getElementById('cal-title').textContent = months[viewMonth] + ' ' + viewYear;
 
       const grid = document.getElementById('cal-grid');
       grid.innerHTML = '';
 
-      const dows = ['Mo','Tu','We','Th','Fr','Sa','Su'];
-      dows.forEach(d => {
+      ['Mo','Tu','We','Th','Fr','Sa','Su'].forEach(d => {
         const el = document.createElement('div');
         el.className = 'cal-dow';
         el.textContent = d;
         grid.appendChild(el);
       });
 
-      const firstDay = new Date(viewYear, viewMonth, 1);
-      const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
-      let startOffset = (firstDay.getDay() + 6) % 7;
+      const firstDay   = new Date(viewYear, viewMonth, 1);
+      const daysInMonth = new Date(viewYear, viewMonth+1, 0).getDate();
+      const startOffset = (firstDay.getDay()+6) % 7;
       const today = todayKey();
 
-      function dayCell(day, key, cls) {
+      function cell(day, key, cls) {
         const el = document.createElement('div');
         const isFuture = key > today;
         if (isFuture) cls += ' future';
         if (key === selectedKey) cls += ' selected';
-        if (key === today) cls += ' is-today';
+        if (key === today)       cls += ' is-today';
         el.className = cls;
         let html = `<span class="day-num">${day}</span>`;
-        if (data[key]) html += `<span class="day-count">${data[key]}</span>`;
+        if (data[key])  html += `<span class="day-count">${data[key]}</span>`;
         if (moods[key]) html += `<span class="day-mood">${moods[key]}</span>`;
         el.innerHTML = html;
         if (!isFuture) el.addEventListener('click', () => selectDay(key));
@@ -586,93 +891,73 @@
       }
 
       const prevDays = new Date(viewYear, viewMonth, 0).getDate();
-      for (let i = startOffset - 1; i >= 0; i--) {
+      for (let i = startOffset-1; i >= 0; i--) {
         const day = prevDays - i;
-        const key = dateKey(new Date(viewYear, viewMonth - 1, day));
-        grid.appendChild(dayCell(day, key, 'cal-day' + (data[key] ? ' has-data' : '')));
+        const key = dateKey(new Date(viewYear, viewMonth-1, day));
+        grid.appendChild(cell(day, key, 'cal-day' + (data[key] ? ' has-data' : '')));
       }
-
       for (let day = 1; day <= daysInMonth; day++) {
         const key = dateKey(new Date(viewYear, viewMonth, day));
-        let cls = 'cal-day current-month';
-        if (data[key]) cls += ' has-data';
-        grid.appendChild(dayCell(day, key, cls));
+        grid.appendChild(cell(day, key, 'cal-day current-month' + (data[key] ? ' has-data' : '')));
       }
-
-      const totalCells = startOffset + daysInMonth;
-      const remaining = (7 - (totalCells % 7)) % 7;
-      for (let day = 1; day <= remaining; day++) {
-        const key = dateKey(new Date(viewYear, viewMonth + 1, day));
-        grid.appendChild(dayCell(day, key, 'cal-day' + (data[key] ? ' has-data' : '')));
+      const rem = (7 - ((startOffset + daysInMonth) % 7)) % 7;
+      for (let day = 1; day <= rem; day++) {
+        const key = dateKey(new Date(viewYear, viewMonth+1, day));
+        grid.appendChild(cell(day, key, 'cal-day' + (data[key] ? ' has-data' : '')));
       }
     }
 
     function changeMonth(dir) {
       viewMonth += dir;
       if (viewMonth > 11) { viewMonth = 0; viewYear++; }
-      if (viewMonth < 0) { viewMonth = 11; viewYear--; }
+      if (viewMonth < 0)  { viewMonth = 11; viewYear--; }
       renderCalendar();
     }
 
-    function render() {
-      renderStats();
-      renderSelectedDay();
-      renderCalendar();
-    }
-
-    // --- Notifications ---
+    // ── Notifications ──
     function dismissNotif() {
       localStorage.setItem('pushups_notif', 'dismissed');
       document.getElementById('notif-banner').classList.add('hidden');
     }
-
     async function enableNotif() {
-      const permission = await Notification.requestPermission();
-      if (permission !== 'granted') { dismissNotif(); return; }
+      const perm = await Notification.requestPermission();
+      if (perm !== 'granted') { dismissNotif(); return; }
       const time = document.getElementById('notif-hour').value || '09:00';
       localStorage.setItem('pushups_notif', 'enabled');
       localStorage.setItem('pushups_notif_time', time);
       document.getElementById('notif-banner').classList.add('hidden');
       scheduleNotification();
     }
-
     function scheduleNotification() {
       const time = localStorage.getItem('pushups_notif_time');
       if (!time || localStorage.getItem('pushups_notif') !== 'enabled') return;
-      const [h, m] = time.split(':').map(Number);
-      const now = new Date();
-      const target = new Date();
+      const [h,m] = time.split(':').map(Number);
+      const now = new Date(), target = new Date();
       target.setHours(h, m, 0, 0);
-      if (target <= now) target.setDate(target.getDate() + 1);
+      if (target <= now) target.setDate(target.getDate()+1);
       setTimeout(() => {
-        if (Notification.permission === 'granted') {
-          new Notification('Pushup Counter', { body: 'Time to do your push-ups!', icon: 'icon-192.png' });
-        }
+        if (Notification.permission === 'granted')
+          new Notification('Pushup Counter', { body: 'Time to do your push-ups! 💪', icon: 'icon-192.png' });
         scheduleNotification();
       }, target - now);
     }
-
     function initNotifications() {
       const state = localStorage.getItem('pushups_notif');
-      if (!state && 'Notification' in window) {
+      if (!state && 'Notification' in window)
         document.getElementById('notif-banner').classList.remove('hidden');
-      } else if (state === 'enabled') {
+      else if (state === 'enabled')
         scheduleNotification();
-      }
     }
 
-    // Register service worker
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('./sw.js');
-    }
+    // ── Boot ──
+    if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js');
 
-    // Init
-    loadData();
+    loadAll();
     const now = new Date();
     viewYear = now.getFullYear();
     viewMonth = now.getMonth();
     selectedKey = todayKey();
-    render();
+    renderHome();
     initNotifications();
   </script>
 </body>
