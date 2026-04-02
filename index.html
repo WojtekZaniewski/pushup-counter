@@ -40,7 +40,7 @@
     .stat-value { font-size: 1.4rem; font-weight: 700; color: #fff; }
     .stat-label { font-size: 0.65rem; color: #666; margin-top: 0.25rem; letter-spacing: 0.1em; text-transform: uppercase; }
 
-    /* Today */
+    /* Selected day panel */
     .today {
       background: #141414;
       border-radius: 10px;
@@ -104,6 +104,8 @@
       color: #555;
       position: relative;
       gap: 1px;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
     }
     .cal-day.current-month { color: #999; }
     .cal-day.has-data {
@@ -113,6 +115,13 @@
     .cal-day.is-today {
       outline: 2px solid #22c55e;
       outline-offset: -2px;
+    }
+    .cal-day.selected {
+      outline: 2px solid #fff;
+      outline-offset: -2px;
+    }
+    .cal-day.is-today.selected {
+      outline: 2px solid #fff;
     }
     .cal-day .day-num {
       font-size: 0.6rem;
@@ -124,11 +133,86 @@
       color: #22c55e;
       line-height: 1;
     }
+
+    /* Notification banner */
+    .notif-banner {
+      background: #141414;
+      border-radius: 10px;
+      padding: 1rem 1.25rem;
+      margin-bottom: 1.5rem;
+      text-align: center;
+    }
+    .notif-banner p {
+      font-size: 0.8rem;
+      color: #999;
+      margin-bottom: 0.75rem;
+      line-height: 1.4;
+    }
+    .notif-banner .notif-time {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      margin-bottom: 0.75rem;
+    }
+    .notif-banner input[type="time"] {
+      background: #0a0a0a;
+      border: 1px solid #333;
+      border-radius: 6px;
+      color: #e5e5e5;
+      font-family: inherit;
+      font-size: 0.85rem;
+      padding: 0.4rem 0.6rem;
+      text-align: center;
+    }
+    .notif-banner label {
+      font-size: 0.75rem;
+      color: #666;
+    }
+    .notif-btns {
+      display: flex;
+      gap: 0.5rem;
+      justify-content: center;
+    }
+    .notif-btns button {
+      border: none;
+      border-radius: 8px;
+      padding: 0.5rem 1.25rem;
+      font-family: inherit;
+      font-size: 0.75rem;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .notif-btns .btn-yes {
+      background: #22c55e;
+      color: #0a0a0a;
+      font-weight: 600;
+    }
+    .notif-btns .btn-no {
+      background: #222;
+      color: #666;
+    }
+    .notif-btns button:active { transform: scale(0.95); }
+
+    .hidden { display: none !important; }
   </style>
 </head>
 <body>
   <div class="container">
     <h1>PUSHUP COUNTER</h1>
+
+    <!-- Notification prompt -->
+    <div class="notif-banner hidden" id="notif-banner">
+      <p>Get a daily reminder to do your push-ups?</p>
+      <div class="notif-time">
+        <label for="notif-hour">Remind at</label>
+        <input type="time" id="notif-hour" value="09:00">
+      </div>
+      <div class="notif-btns">
+        <button class="btn-no" onclick="dismissNotif()">No thanks</button>
+        <button class="btn-yes" onclick="enableNotif()">Enable</button>
+      </div>
+    </div>
 
     <div class="stats">
       <div class="stat">
@@ -167,6 +251,7 @@
   <script>
     let data = {};
     let viewYear, viewMonth;
+    let selectedKey; // currently selected day key (YYYY-MM-DD)
 
     function loadData() {
       try { data = JSON.parse(localStorage.getItem('pushups')) || {}; }
@@ -185,8 +270,13 @@
 
     function todayKey() { return dateKey(new Date()); }
 
+    function selectDay(key) {
+      selectedKey = key;
+      render();
+    }
+
     function addPushups(n) {
-      const key = todayKey();
+      const key = selectedKey;
       const cur = (data[key] || 0) + n;
       if (cur <= 0) delete data[key];
       else data[key] = cur;
@@ -201,7 +291,6 @@
     function getStreak() {
       let d = new Date();
       let streak = 0;
-      // If today has no entry, start from yesterday
       if (!data[dateKey(d)]) d.setDate(d.getDate() - 1);
       while (data[dateKey(d)]) {
         streak++;
@@ -223,12 +312,15 @@
       document.getElementById('since').textContent = getStartDate();
     }
 
-    function renderToday() {
-      const now = new Date();
+    function renderSelectedDay() {
+      const [y, m, d] = selectedKey.split('-').map(Number);
+      const date = new Date(y, m - 1, d);
+      const isToday = selectedKey === todayKey();
       const opts = { weekday: 'long', day: 'numeric', month: 'long' };
+      const label = date.toLocaleDateString('en-US', opts);
       document.getElementById('today-date').textContent =
-        now.toLocaleDateString('en-US', opts);
-      document.getElementById('today-count').textContent = data[todayKey()] || 0;
+        isToday ? label : label + ' (past)';
+      document.getElementById('today-count').textContent = data[selectedKey] || 0;
     }
 
     function renderCalendar() {
@@ -240,7 +332,6 @@
       const grid = document.getElementById('cal-grid');
       grid.innerHTML = '';
 
-      // Day-of-week headers (Mon first)
       const dows = ['Mo','Tu','We','Th','Fr','Sa','Su'];
       dows.forEach(d => {
         const el = document.createElement('div');
@@ -251,16 +342,17 @@
 
       const firstDay = new Date(viewYear, viewMonth, 1);
       const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
-      // Monday=0 offset
       let startOffset = (firstDay.getDay() + 6) % 7;
-
       const today = todayKey();
 
       function dayCell(day, key, cls) {
         const el = document.createElement('div');
+        if (key === selectedKey) cls += ' selected';
+        if (key === today) cls += ' is-today';
         el.className = cls;
         el.innerHTML = `<span class="day-num">${day}</span>` +
           (data[key] ? `<span class="day-count">${data[key]}</span>` : '');
+        el.addEventListener('click', () => selectDay(key));
         return el;
       }
 
@@ -277,7 +369,6 @@
         const key = dateKey(new Date(viewYear, viewMonth, day));
         let cls = 'cal-day current-month';
         if (data[key]) cls += ' has-data';
-        if (key === today) cls += ' is-today';
         grid.appendChild(dayCell(day, key, cls));
       }
 
@@ -299,8 +390,61 @@
 
     function render() {
       renderStats();
-      renderToday();
+      renderSelectedDay();
       renderCalendar();
+    }
+
+    // --- Notifications ---
+    function dismissNotif() {
+      localStorage.setItem('pushups_notif', 'dismissed');
+      document.getElementById('notif-banner').classList.add('hidden');
+    }
+
+    async function enableNotif() {
+      const permission = await Notification.requestPermission();
+      if (permission !== 'granted') {
+        dismissNotif();
+        return;
+      }
+      const time = document.getElementById('notif-hour').value || '09:00';
+      localStorage.setItem('pushups_notif', 'enabled');
+      localStorage.setItem('pushups_notif_time', time);
+      document.getElementById('notif-banner').classList.add('hidden');
+      scheduleNotification();
+    }
+
+    function scheduleNotification() {
+      const time = localStorage.getItem('pushups_notif_time');
+      if (!time || localStorage.getItem('pushups_notif') !== 'enabled') return;
+
+      const [h, m] = time.split(':').map(Number);
+      const now = new Date();
+      const target = new Date();
+      target.setHours(h, m, 0, 0);
+      if (target <= now) target.setDate(target.getDate() + 1);
+
+      const ms = target - now;
+      setTimeout(() => {
+        if (Notification.permission === 'granted') {
+          new Notification('Pushup Counter', {
+            body: 'Time to do your push-ups!',
+            icon: 'icon-192.png'
+          });
+        }
+        // Schedule next day
+        scheduleNotification();
+      }, ms);
+    }
+
+    function initNotifications() {
+      const state = localStorage.getItem('pushups_notif');
+      if (!state && 'Notification' in window) {
+        // First visit — show the banner
+        document.getElementById('notif-banner').classList.remove('hidden');
+      } else if (state === 'enabled') {
+        scheduleNotification();
+      }
+      // If 'dismissed' — do nothing, banner stays hidden forever
     }
 
     // Register service worker
@@ -313,7 +457,9 @@
     const now = new Date();
     viewYear = now.getFullYear();
     viewMonth = now.getMonth();
+    selectedKey = todayKey();
     render();
+    initNotifications();
   </script>
 </body>
 </html>
