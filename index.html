@@ -573,15 +573,21 @@
           <span class="weight-delta" id="weight-delta"></span>
         </div>
       </div>
+      <div class="pfield">
+        <label>Daily goal</label>
+        <input type="tel" id="prof-goal" inputmode="numeric" placeholder="push-ups / day"
+          oninput="this.value=this.value.replace(/[^0-9]/g,'')">
+      </div>
       <button class="save-btn" onclick="saveProfile()">Save profile</button>
     </div>
 
-    <!-- Daily recommendation -->
+    <!-- Daily goal / recommendation -->
     <div id="rec-section" class="hidden">
       <div class="rec-card">
         <div class="rec-num" id="rec-num">—</div>
-        <div class="rec-label" id="rec-label">recommended daily push-ups</div>
+        <div class="rec-label" id="rec-label"></div>
       </div>
+      <div id="rec-suggested" class="hidden" style="font-size:0.68rem;color:var(--text2);text-align:center;margin-top:0.4rem;margin-bottom:0.6rem;"></div>
     </div>
 
     <!-- PR -->
@@ -697,10 +703,11 @@
       profile.name   = document.getElementById('prof-name').value.trim();
       profile.age    = document.getElementById('prof-age').value;
       profile.height = document.getElementById('prof-height').value;
+      const goalVal  = parseInt(document.getElementById('prof-goal').value, 10);
+      profile.goal   = (!isNaN(goalVal) && goalVal > 0) ? goalVal : null;
       const wVal = parseFloat(document.getElementById('prof-weight').value);
       if (!isNaN(wVal) && wVal > 0) {
         profile.weight = wVal;
-        // Only push if weight changed
         const h = profile.weightHistory;
         if (!h.length || h[h.length-1].value !== wVal) {
           h.push({ date: todayKey(), value: wVal });
@@ -761,6 +768,7 @@
       document.getElementById('prof-age').value    = profile.age;
       document.getElementById('prof-height').value = profile.height;
       document.getElementById('prof-weight').value = profile.weight;
+      document.getElementById('prof-goal').value   = profile.goal || '';
       document.getElementById('gender-m').classList.toggle('active', profile.gender === 'm');
       document.getElementById('gender-f').classList.toggle('active', profile.gender === 'f');
 
@@ -794,17 +802,25 @@
         wEl.textContent = '';
       }
 
-      // Daily recommendation
+      // Daily goal / recommendation
       const recSec = document.getElementById('rec-section');
-      if (profile.gender && REC[profile.gender]) {
+      const suggested = profile.gender ? REC[profile.gender] : null;
+      const active = profile.goal || suggested;
+      if (active) {
         recSec.classList.remove('hidden');
-        const rec = REC[profile.gender];
         const avg = getAvgDaily();
-        document.getElementById('rec-num').textContent = rec;
+        document.getElementById('rec-num').textContent = profile.goal || suggested;
         document.getElementById('rec-label').textContent =
-          avg > 0
-            ? `recommended · you average ${avg} / day`
-            : 'recommended daily push-ups';
+          profile.goal
+            ? (avg > 0 ? `your goal · avg ${avg} / day` : 'your daily goal')
+            : (avg > 0 ? `suggested · avg ${avg} / day` : 'suggested for your gender');
+        const sugEl = document.getElementById('rec-suggested');
+        if (profile.goal && suggested) {
+          sugEl.classList.remove('hidden');
+          sugEl.textContent = `suggested for your gender: ${suggested} / day`;
+        } else {
+          sugEl.classList.add('hidden');
+        }
       } else {
         recSec.classList.add('hidden');
       }
@@ -890,12 +906,12 @@
 
       // Daily avg vs recommendation
       const avgEl = document.getElementById('daily-avg');
-      if (profile.gender && REC[profile.gender]) {
+      const goal = profile.goal || (profile.gender ? REC[profile.gender] : null);
+      if (goal) {
         const avg = getAvgDaily();
-        const rec = REC[profile.gender];
         avgEl.innerHTML = avg > 0
-          ? `your avg: <span>${avg}</span> · goal: <span>${rec}</span>`
-          : `daily goal: <span>${rec}</span>`;
+          ? `avg: <span>${avg}</span> · goal: <span>${goal}</span>`
+          : `daily goal: <span>${goal}</span>`;
       } else {
         avgEl.textContent = '';
       }
