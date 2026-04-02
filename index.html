@@ -27,18 +27,18 @@
       --gain: #ef4444;
     }
     [data-theme="cute"] {
-      --bg: #1a0a14;
-      --surface: #271020;
-      --surface2: #33152a;
-      --accent: #f472b6;
-      --accent-dim: #f472b622;
-      --text: #fce7f3;
-      --text2: #d08aac;
-      --text3: #8a4a6a;
-      --border: #4a1a38;
-      --tab-bg: #1f0c18;
-      --loss: #34d399;
-      --gain: #f87171;
+      --bg: #1e0a18;
+      --surface: #2e1228;
+      --surface2: #3d1a36;
+      --accent: #f9a8d4;
+      --accent-dim: #f9a8d420;
+      --text: #fff0f8;
+      --text2: #e8a0c8;
+      --text3: #a05880;
+      --border: #5c2248;
+      --tab-bg: #240d1e;
+      --loss: #6ee7b7;
+      --gain: #fca5a5;
     }
     [data-theme="dark"] {
       --bg: #050505;
@@ -67,16 +67,16 @@
       --gain: #dc2626;
     }
     [data-theme="submarine"] {
-      --bg: #051525;
-      --surface: #0a2035;
-      --surface2: #0e2d45;
-      --accent: #00d4ff;
-      --accent-dim: #00d4ff18;
-      --text: #b0e4f0;
-      --text2: #5a9ab0;
-      --text3: #2a5060;
-      --border: #0e3a50;
-      --tab-bg: #071a28;
+      --bg: #030d08;
+      --surface: #071a10;
+      --surface2: #0c2518;
+      --accent: #2dd4a0;
+      --accent-dim: #2dd4a018;
+      --text: #b0e8d0;
+      --text2: #4a9a78;
+      --text3: #1e5040;
+      --border: #0e3828;
+      --tab-bg: #04100a;
     }
     [data-theme="forest"] {
       --bg: #0d1a0f;
@@ -103,16 +103,16 @@
       --tab-bg: #1f0d00;
     }
     [data-theme="ocean"] {
-      --bg: #020d1a;
-      --surface: #051828;
-      --surface2: #082235;
-      --accent: #38bdf8;
-      --accent-dim: #38bdf818;
-      --text: #e0f2fe;
-      --text2: #60a5c8;
-      --text3: #1e4a6a;
-      --border: #0a2d44;
-      --tab-bg: #030f1e;
+      --bg: #04091e;
+      --surface: #080f30;
+      --surface2: #0d1640;
+      --accent: #818cf8;
+      --accent-dim: #818cf818;
+      --text: #e0e7ff;
+      --text2: #6475c0;
+      --text3: #283580;
+      --border: #141e5a;
+      --tab-bg: #050b22;
     }
     [data-theme="candy"] {
       --bg: #0f0a1e;
@@ -125,6 +125,19 @@
       --text3: #6b21a8;
       --border: #3b0764;
       --tab-bg: #120d22;
+    }
+
+    [data-theme="beast"] {
+      --bg: #0a0500;
+      --surface: #1a0c00;
+      --surface2: #2a1400;
+      --accent: #fbbf24;
+      --accent-dim: #fbbf2420;
+      --text: #fef3c7;
+      --text2: #d97706;
+      --text3: #78350f;
+      --border: #451a03;
+      --tab-bg: #0f0700;
     }
 
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -584,6 +597,25 @@
       color: var(--accent);
     }
 
+    /* ── Toast ── */
+    .toast {
+      position: fixed;
+      bottom: calc(5rem + env(safe-area-inset-bottom));
+      left: 50%; transform: translateX(-50%) translateY(20px);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 0.6rem 1.2rem;
+      font-size: 0.8rem;
+      color: var(--text);
+      white-space: nowrap;
+      opacity: 0;
+      transition: opacity 0.3s, transform 0.3s;
+      pointer-events: none;
+      z-index: 200;
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
     .hidden { display: none !important; }
   </style>
 </head>
@@ -591,7 +623,7 @@
 
   <!-- ── HOME PAGE ── -->
   <div class="page" id="page-home">
-    <h1>PUSHUP COUNTER</h1>
+    <h1 id="main-title" onclick="titleTap()">PUSHUP COUNTER</h1>
 
     <!-- Notification banner -->
     <div class="card notif-banner hidden" id="notif-banner">
@@ -794,6 +826,8 @@
       <span>Profile</span>
     </button>
   </div>
+
+  <div class="toast" id="toast"></div>
 
   <script>
     // ── State ──
@@ -1037,6 +1071,7 @@
       else data[selectedKey] = n;
       saveData();
       renderHome();
+      if (n > 0) checkStreakMilestone(getStreak());
     }
 
     function setMood(emoji) {
@@ -1309,6 +1344,48 @@
 
       const allDone = done === total;
       document.getElementById('wo-done-msg').classList.toggle('hidden', !allDone);
+    }
+
+    // ── Toast ──
+    let toastTimer;
+    function showToast(msg, ms = 2800) {
+      const el = document.getElementById('toast');
+      el.textContent = msg;
+      el.classList.add('show');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => el.classList.remove('show'), ms);
+    }
+
+    // ── Easter eggs ──
+    let titleTaps = 0, titleTimer;
+    function titleTap() {
+      titleTaps++;
+      clearTimeout(titleTimer);
+      titleTimer = setTimeout(() => { titleTaps = 0; }, 1200);
+      if (titleTaps >= 7) {
+        titleTaps = 0;
+        const isBeast = currentTheme === 'beast';
+        applyTheme(isBeast ? 'default' : 'beast');
+        showToast(isBeast ? '😌 back to normal' : '🦁 BEAST MODE ACTIVATED');
+        if (currentTab === 'profile') renderThemeGrid();
+      }
+    }
+
+    // Konami code → confetti toast
+    const KONAMI = [38,38,40,40,37,39,37,39,66,65];
+    let konamiIdx = 0;
+    document.addEventListener('keydown', e => {
+      konamiIdx = e.keyCode === KONAMI[konamiIdx] ? konamiIdx + 1 : 0;
+      if (konamiIdx === KONAMI.length) {
+        konamiIdx = 0;
+        showToast('🎊 +30 imaginary push-ups added!', 3500);
+      }
+    });
+
+    // Streak milestones toast
+    function checkStreakMilestone(streak) {
+      const milestones = { 3:'3 days straight 🔥', 7:'One whole week! 🏆', 14:'Two weeks! 💪', 30:'One month!! 🌟', 100:'100 DAYS. LEGEND. 👑' };
+      if (milestones[streak]) showToast(milestones[streak]);
     }
 
     // ── Notifications ──
