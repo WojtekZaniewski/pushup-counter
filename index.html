@@ -1427,6 +1427,11 @@
     if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js');
 
     loadAll();
+    // Reset workout if it's from a previous day
+    if (workout.date && workout.date !== todayKey()) {
+      workout = { date: todayKey(), mode: workout.mode || 'sets', value: null, plan: [], completed: [] };
+      saveWorkout();
+    }
     const now = new Date();
     viewYear = now.getFullYear();
     viewMonth = now.getMonth();
