@@ -320,7 +320,19 @@
       text-align: center;
       font-size: 0.7rem;
       color: var(--text2);
+      margin-bottom: 0.35rem;
+    }
+    .profile-streak {
+      text-align: center;
+      font-size: 0.72rem;
+      color: var(--text2);
       margin-bottom: 1rem;
+    }
+    .profile-streak .streak-val { color: var(--accent); font-weight: 700; }
+    .profile-streak .streak-active {
+      color: var(--accent);
+      font-size: 0.65rem;
+      margin-left: 0.3rem;
     }
     .section-title {
       font-size: 0.62rem;
@@ -540,6 +552,7 @@
     <div class="profile-hero" id="prof-hero">💪</div>
     <div class="profile-name-display" id="prof-name-display"></div>
     <div class="profile-sub" id="prof-sub"></div>
+    <div class="profile-streak" id="prof-streak"></div>
 
     <!-- Info -->
     <div class="card">
@@ -790,6 +803,17 @@
       if (profile.height) parts.push(profile.height + ' cm');
       document.getElementById('prof-sub').textContent = parts.join(' · ') || ' ';
 
+      // Longest streak
+      const longest = getLongestStreak();
+      const streakEl = document.getElementById('prof-streak');
+      if (longest > 0) {
+        const isActive = getStreak() === longest;
+        streakEl.innerHTML = `longest streak: <span class="streak-val">${longest} day${longest !== 1 ? 's' : ''}</span>` +
+          (isActive ? ' <span class="streak-active">· active 🔥</span>' : '');
+      } else {
+        streakEl.textContent = '';
+      }
+
       // Weight delta
       const wEl = document.getElementById('weight-delta');
       const h = profile.weightHistory;
@@ -873,6 +897,18 @@
       if (!data[dateKey(d)]) d.setDate(d.getDate()-1);
       while (data[dateKey(d)]) { s++; d.setDate(d.getDate()-1); }
       return s;
+    }
+    function getLongestStreak() {
+      const keys = Object.keys(data).sort();
+      if (!keys.length) return 0;
+      let longest = 1, current = 1;
+      for (let i = 1; i < keys.length; i++) {
+        const prev = new Date(keys[i-1]), cur = new Date(keys[i]);
+        const diff = (cur - prev) / 86400000;
+        if (diff === 1) { current++; longest = Math.max(longest, current); }
+        else current = 1;
+      }
+      return longest;
     }
     function getStartDate() {
       const keys = Object.keys(data).sort();
