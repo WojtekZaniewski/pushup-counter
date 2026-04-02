@@ -26,6 +26,20 @@
       --loss: #22c55e;
       --gain: #ef4444;
     }
+    [data-theme="cute"] {
+      --bg: #1a0a14;
+      --surface: #271020;
+      --surface2: #33152a;
+      --accent: #f472b6;
+      --accent-dim: #f472b622;
+      --text: #fce7f3;
+      --text2: #d08aac;
+      --text3: #8a4a6a;
+      --border: #4a1a38;
+      --tab-bg: #1f0c18;
+      --loss: #34d399;
+      --gain: #f87171;
+    }
     [data-theme="dark"] {
       --bg: #050505;
       --surface: #0d0d0d;
@@ -39,17 +53,18 @@
       --tab-bg: #080808;
     }
     [data-theme="light"] {
-      --bg: #f0f0f0;
+      --bg: #f5f0ff;
       --surface: #ffffff;
-      --surface2: #e8e8e8;
-      --accent: #16a34a;
-      --accent-dim: #16a34a18;
-      --text: #111;
-      --text2: #555;
-      --text3: #aaa;
-      --border: #d0d0d0;
-      --tab-bg: #e0e0e0;
-      --loss: #16a34a;
+      --surface2: #ede8f8;
+      --accent: #7c3aed;
+      --accent-dim: #7c3aed15;
+      --text: #1a0a2e;
+      --text2: #6b5a8a;
+      --text3: #b0a0c8;
+      --border: #d8cff0;
+      --tab-bg: #ede8f8;
+      --loss: #059669;
+      --gain: #dc2626;
     }
     [data-theme="submarine"] {
       --bg: #051525;
@@ -86,6 +101,30 @@
       --text3: #703010;
       --border: #3d1f00;
       --tab-bg: #1f0d00;
+    }
+    [data-theme="ocean"] {
+      --bg: #020d1a;
+      --surface: #051828;
+      --surface2: #082235;
+      --accent: #38bdf8;
+      --accent-dim: #38bdf818;
+      --text: #e0f2fe;
+      --text2: #60a5c8;
+      --text3: #1e4a6a;
+      --border: #0a2d44;
+      --tab-bg: #030f1e;
+    }
+    [data-theme="candy"] {
+      --bg: #0f0a1e;
+      --surface: #1a1030;
+      --surface2: #241540;
+      --accent: #f0abfc;
+      --accent-dim: #f0abfc18;
+      --text: #fdf4ff;
+      --text2: #c084fc;
+      --text3: #6b21a8;
+      --border: #3b0764;
+      --tab-bg: #120d22;
     }
 
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -587,12 +626,15 @@
     const MOODS = ['💀','😓','😐','😊','🔥'];
 
     const THEMES = [
-      { id: 'default', icon: '🌿', name: 'Cute' },
-      { id: 'dark',    icon: '🌑', name: 'Dark' },
-      { id: 'light',   icon: '☀️',  name: 'Light' },
+      { id: 'default',   icon: '🌿', name: 'Default' },
+      { id: 'cute',      icon: '🌸', name: 'Cute' },
+      { id: 'dark',      icon: '🌑', name: 'Dark' },
+      { id: 'light',     icon: '☀️',  name: 'Light' },
       { id: 'submarine', icon: '🌊', name: 'Sub' },
-      { id: 'forest',  icon: '🌲', name: 'Forest' },
-      { id: 'sunset',  icon: '🔥', name: 'Sunset' },
+      { id: 'forest',    icon: '🌲', name: 'Forest' },
+      { id: 'sunset',    icon: '🔥', name: 'Sunset' },
+      { id: 'ocean',     icon: '🐋', name: 'Ocean' },
+      { id: 'candy',     icon: '🍬', name: 'Candy' },
     ];
 
     // daily recommended push-ups by gender (average fitness level)
@@ -626,7 +668,8 @@
 
     // ── Theme ──
     function applyTheme(id) {
-      document.documentElement.setAttribute('data-theme', id === 'default' ? '' : id);
+      if (id === 'default') document.documentElement.removeAttribute('data-theme');
+      else document.documentElement.setAttribute('data-theme', id);
       currentTheme = id;
       localStorage.setItem('pushups_theme', id);
     }
@@ -679,6 +722,12 @@
       renderPRList();
     }
 
+    function removePR(idx) {
+      profile.prs.splice(idx, 1);
+      saveProfileD();
+      renderPRList();
+    }
+
     function renderPRList() {
       const list = document.getElementById('pr-list');
       list.innerHTML = '';
@@ -690,12 +739,18 @@
       prs.forEach((pr, i) => {
         const el = document.createElement('div');
         el.className = 'pr-entry';
+        const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : '▸';
         el.innerHTML = `
-          <span>${i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : '▸'}</span>
+          <span>${medal}</span>
           <span class="pr-val">${pr.reps} reps</span>
           <span class="pr-date">${pr.date}</span>
-          ${i === 0 ? '<span class="pr-badge">PR</span>' : ''}
+          ${i === 0 ? '<span class="pr-badge">PR</span>' : '<span></span>'}
         `;
+        const del = document.createElement('button');
+        del.textContent = '×';
+        del.style.cssText = 'background:none;border:none;color:var(--text3);font-size:1rem;cursor:pointer;padding:0 0.2rem;line-height:1;';
+        del.addEventListener('click', () => removePR(i));
+        el.appendChild(del);
         list.appendChild(el);
       });
     }
@@ -710,7 +765,12 @@
       document.getElementById('gender-f').classList.toggle('active', profile.gender === 'f');
 
       // Hero motifs per gender
-      const heroMap = { m: '💪 🏋️ ⚡', f: '✨ 💪 🌸', '': '💪 🔥 ⚡' };
+      const isCute = currentTheme === 'cute';
+      const heroMap = {
+        m: isCute ? '💪 🌸 ⚡' : '💪 🏋️ ⚡',
+        f: isCute ? '🌸 ✨ 🌺' : '✨ 💪 🌸',
+        '': isCute ? '🌸 💪 🌺' : '💪 🔥 ⚡'
+      };
       document.getElementById('prof-hero').textContent = heroMap[profile.gender] || heroMap[''];
 
       // Name display
