@@ -100,24 +100,29 @@
       align-items: center;
       justify-content: center;
       border-radius: 8px;
-      font-size: 0.75rem;
+      font-size: 0.65rem;
       color: #555;
       position: relative;
+      gap: 1px;
     }
     .cal-day.current-month { color: #999; }
     .cal-day.has-data {
       background: #22c55e22;
       color: #22c55e;
-      font-weight: 600;
     }
     .cal-day.is-today {
       outline: 2px solid #22c55e;
       outline-offset: -2px;
     }
+    .cal-day .day-num {
+      font-size: 0.6rem;
+      line-height: 1;
+    }
     .cal-day .day-count {
-      font-size: 0.5rem;
-      color: #22c55e99;
-      margin-top: 1px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: #22c55e;
+      line-height: 1;
     }
   </style>
 </head>
@@ -251,41 +256,37 @@
 
       const today = todayKey();
 
+      function dayCell(day, key, cls) {
+        const el = document.createElement('div');
+        el.className = cls;
+        el.innerHTML = `<span class="day-num">${day}</span>` +
+          (data[key] ? `<span class="day-count">${data[key]}</span>` : '');
+        return el;
+      }
+
       // Previous month trailing days
       const prevDays = new Date(viewYear, viewMonth, 0).getDate();
       for (let i = startOffset - 1; i >= 0; i--) {
         const day = prevDays - i;
-        const d = new Date(viewYear, viewMonth - 1, day);
-        const key = dateKey(d);
-        const el = document.createElement('div');
-        el.className = 'cal-day' + (data[key] ? ' has-data' : '');
-        el.innerHTML = day + (data[key] ? `<span class="day-count">${data[key]}</span>` : '');
-        grid.appendChild(el);
+        const key = dateKey(new Date(viewYear, viewMonth - 1, day));
+        grid.appendChild(dayCell(day, key, 'cal-day' + (data[key] ? ' has-data' : '')));
       }
 
       // Current month days
       for (let day = 1; day <= daysInMonth; day++) {
-        const d = new Date(viewYear, viewMonth, day);
-        const key = dateKey(d);
-        const el = document.createElement('div');
+        const key = dateKey(new Date(viewYear, viewMonth, day));
         let cls = 'cal-day current-month';
         if (data[key]) cls += ' has-data';
         if (key === today) cls += ' is-today';
-        el.className = cls;
-        el.innerHTML = day + (data[key] ? `<span class="day-count">${data[key]}</span>` : '');
-        grid.appendChild(el);
+        grid.appendChild(dayCell(day, key, cls));
       }
 
       // Next month leading days
       const totalCells = startOffset + daysInMonth;
       const remaining = (7 - (totalCells % 7)) % 7;
       for (let day = 1; day <= remaining; day++) {
-        const d = new Date(viewYear, viewMonth + 1, day);
-        const key = dateKey(d);
-        const el = document.createElement('div');
-        el.className = 'cal-day' + (data[key] ? ' has-data' : '');
-        el.innerHTML = day + (data[key] ? `<span class="day-count">${data[key]}</span>` : '');
-        grid.appendChild(el);
+        const key = dateKey(new Date(viewYear, viewMonth + 1, day));
+        grid.appendChild(dayCell(day, key, 'cal-day' + (data[key] ? ' has-data' : '')));
       }
     }
 
