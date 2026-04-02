@@ -49,23 +49,35 @@
       margin-bottom: 1.5rem;
     }
     .today-date { font-size: 0.75rem; color: #666; margin-bottom: 0.5rem; }
-    .today-count { font-size: 3rem; font-weight: 700; color: #fff; margin-bottom: 0.75rem; }
-    .today-buttons { display: flex; gap: 0.75rem; justify-content: center; }
-    .today-buttons button {
-      width: 56px; height: 56px;
-      border-radius: 50%;
+    .today-input {
+      background: #0a0a0a;
       border: 2px solid #333;
-      background: transparent;
-      color: #e5e5e5;
-      font-size: 1.5rem;
+      border-radius: 10px;
+      color: #fff;
       font-family: inherit;
-      cursor: pointer;
-      transition: all 0.15s;
+      font-size: 3rem;
+      font-weight: 700;
+      text-align: center;
+      width: 100%;
+      max-width: 160px;
+      padding: 0.25rem 0.5rem;
+      margin: 0 auto 0.5rem;
+      display: block;
+      -moz-appearance: textfield;
     }
-    .today-buttons button:active { transform: scale(0.92); }
-    .today-buttons .btn-add { border-color: #22c55e; color: #22c55e; }
-    .today-buttons .btn-add:active { background: #22c55e22; }
-    .today-buttons .btn-sub:active { background: #ffffff11; }
+    .today-input:focus {
+      outline: none;
+      border-color: #22c55e;
+    }
+    .today-input::-webkit-outer-spin-button,
+    .today-input::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+    .today-hint {
+      font-size: 0.65rem;
+      color: #444;
+    }
 
     /* Calendar */
     .cal-nav {
@@ -107,6 +119,7 @@
       cursor: pointer;
       -webkit-tap-highlight-color: transparent;
     }
+    .cal-day.future { cursor: default; opacity: 0.25; }
     .cal-day.current-month { color: #999; }
     .cal-day.has-data {
       background: #22c55e22;
@@ -231,11 +244,10 @@
 
     <div class="today">
       <div class="today-date" id="today-date"></div>
-      <div class="today-count" id="today-count">0</div>
-      <div class="today-buttons">
-        <button class="btn-sub" onclick="addPushups(-1)">&minus;</button>
-        <button class="btn-add" onclick="addPushups(1)">+</button>
-      </div>
+      <input type="number" class="today-input" id="today-input"
+        inputmode="numeric" min="0" placeholder="0"
+        onchange="setPushups(this.value)" onkeydown="if(event.key==='Enter'){this.blur()}">
+      <div class="today-hint">tap to type count</div>
     </div>
 
     <div class="calendar">
@@ -271,15 +283,15 @@
     function todayKey() { return dateKey(new Date()); }
 
     function selectDay(key) {
+      if (key > todayKey()) return; // no future days
       selectedKey = key;
       render();
     }
 
-    function addPushups(n) {
-      const key = selectedKey;
-      const cur = (data[key] || 0) + n;
-      if (cur <= 0) delete data[key];
-      else data[key] = cur;
+    function setPushups(val) {
+      const n = parseInt(val, 10);
+      if (!n || n <= 0) delete data[selectedKey];
+      else data[selectedKey] = n;
       saveData();
       render();
     }
@@ -319,8 +331,9 @@
       const opts = { weekday: 'long', day: 'numeric', month: 'long' };
       const label = date.toLocaleDateString('en-US', opts);
       document.getElementById('today-date').textContent =
-        isToday ? label : label + ' (past)';
-      document.getElementById('today-count').textContent = data[selectedKey] || 0;
+        isToday ? 'Today — ' + label : label;
+      const input = document.getElementById('today-input');
+      input.value = data[selectedKey] || '';
     }
 
     function renderCalendar() {
@@ -347,12 +360,14 @@
 
       function dayCell(day, key, cls) {
         const el = document.createElement('div');
+        const isFuture = key > today;
+        if (isFuture) cls += ' future';
         if (key === selectedKey) cls += ' selected';
         if (key === today) cls += ' is-today';
         el.className = cls;
         el.innerHTML = `<span class="day-num">${day}</span>` +
           (data[key] ? `<span class="day-count">${data[key]}</span>` : '');
-        el.addEventListener('click', () => selectDay(key));
+        if (!isFuture) el.addEventListener('click', () => selectDay(key));
         return el;
       }
 
