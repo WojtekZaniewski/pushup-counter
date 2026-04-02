@@ -20,13 +20,93 @@
       min-height: 100dvh;
     }
     .container { max-width: 420px; margin: 0 auto; }
-    h1 {
-      text-align: center;
+
+    /* Header */
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 1.5rem;
+      position: relative;
+    }
+    .header h1 {
       font-size: 1.1rem;
       letter-spacing: 0.3em;
       color: #22c55e;
+    }
+    .profile-toggle {
+      position: absolute;
+      right: 0;
+      background: none;
+      border: none;
+      font-size: 1.3rem;
+      cursor: pointer;
+      padding: 0.25rem;
+      line-height: 1;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    /* Profile */
+    .profile {
+      background: #141414;
+      border-radius: 10px;
+      padding: 1.25rem;
       margin-bottom: 1.5rem;
     }
+    .profile-motifs {
+      text-align: center;
+      font-size: 1.2rem;
+      margin-bottom: 0.75rem;
+      letter-spacing: 0.3em;
+    }
+    .profile-field {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 0.6rem;
+    }
+    .profile-field label {
+      font-size: 0.7rem;
+      color: #666;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      width: 55px;
+      flex-shrink: 0;
+    }
+    .profile-field input {
+      flex: 1;
+      background: #0a0a0a;
+      border: 1px solid #333;
+      border-radius: 6px;
+      color: #e5e5e5;
+      font-family: inherit;
+      font-size: 0.85rem;
+      padding: 0.4rem 0.6rem;
+    }
+    .profile-field input:focus {
+      outline: none;
+      border-color: #22c55e;
+    }
+    .profile-field input[type="number"] {
+      -moz-appearance: textfield;
+    }
+    .profile-field input::-webkit-outer-spin-button,
+    .profile-field input::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+    }
+    .weight-row {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .weight-row input { flex: 1; }
+    .weight-delta {
+      font-size: 0.75rem;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    .weight-delta.loss { color: #22c55e; }
+    .weight-delta.gain { color: #ef4444; }
 
     /* Stats */
     .stats { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; }
@@ -77,6 +157,37 @@
     .today-hint {
       font-size: 0.65rem;
       color: #444;
+      margin-bottom: 0.75rem;
+    }
+
+    /* Mood selector */
+    .mood-label {
+      font-size: 0.65rem;
+      color: #555;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 0.4rem;
+    }
+    .mood-row {
+      display: flex;
+      gap: 0.4rem;
+      justify-content: center;
+    }
+    .mood-btn {
+      font-size: 1.4rem;
+      background: #0a0a0a;
+      border: 2px solid transparent;
+      border-radius: 10px;
+      padding: 0.35rem 0.5rem;
+      cursor: pointer;
+      transition: all 0.15s;
+      line-height: 1;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .mood-btn:active { transform: scale(0.9); }
+    .mood-btn.active {
+      border-color: #22c55e;
+      background: #22c55e15;
     }
 
     /* Calendar */
@@ -146,6 +257,10 @@
       color: #22c55e;
       line-height: 1;
     }
+    .cal-day .day-mood {
+      font-size: 0.55rem;
+      line-height: 1;
+    }
 
     /* Notification banner */
     .notif-banner {
@@ -212,7 +327,33 @@
 </head>
 <body>
   <div class="container">
-    <h1>PUSHUP COUNTER</h1>
+    <div class="header">
+      <h1>PUSHUP COUNTER</h1>
+      <button class="profile-toggle" onclick="toggleProfile()">👤</button>
+    </div>
+
+    <!-- Profile -->
+    <div class="profile hidden" id="profile">
+      <div class="profile-motifs">💪 🏋️ 🔥 ⚡ ✨</div>
+      <div class="profile-field">
+        <label>Name</label>
+        <input type="text" id="prof-name" placeholder="Your name"
+          oninput="saveProfile()">
+      </div>
+      <div class="profile-field">
+        <label>Age</label>
+        <input type="number" id="prof-age" inputmode="numeric" placeholder="25"
+          oninput="saveProfile()">
+      </div>
+      <div class="profile-field">
+        <label>Weight</label>
+        <div class="weight-row">
+          <input type="number" id="prof-weight" inputmode="decimal" placeholder="kg" step="0.1"
+            onchange="updateWeight()">
+          <span class="weight-delta" id="weight-delta"></span>
+        </div>
+      </div>
+    </div>
 
     <!-- Notification prompt -->
     <div class="notif-banner hidden" id="notif-banner">
@@ -249,6 +390,8 @@
         oninput="this.value=this.value.replace(/[^0-9]/g,'')"
         onchange="setPushups(this.value)" onkeydown="if(event.key==='Enter'){this.blur()}">
       <div class="today-hint">tap to type count</div>
+      <div class="mood-label">how are you feeling?</div>
+      <div class="mood-row" id="mood-row"></div>
     </div>
 
     <div class="calendar">
@@ -263,17 +406,27 @@
 
   <script>
     let data = {};
+    let moods = {};
+    let profile = { name: '', age: '', weight: '', weightHistory: [] };
     let viewYear, viewMonth;
-    let selectedKey; // currently selected day key (YYYY-MM-DD)
+    let selectedKey;
+    let profileOpen = false;
 
+    const MOODS = ['🔥', '😊', '😐', '😓', '💀'];
+
+    // --- Data ---
     function loadData() {
-      try { data = JSON.parse(localStorage.getItem('pushups')) || {}; }
-      catch { data = {}; }
+      try { data = JSON.parse(localStorage.getItem('pushups')) || {}; } catch { data = {}; }
+      try { moods = JSON.parse(localStorage.getItem('pushups_moods')) || {}; } catch { moods = {}; }
+      try {
+        const p = JSON.parse(localStorage.getItem('pushups_profile'));
+        if (p) profile = { name: '', age: '', weight: '', weightHistory: [], ...p };
+      } catch {}
     }
 
-    function saveData() {
-      localStorage.setItem('pushups', JSON.stringify(data));
-    }
+    function saveData() { localStorage.setItem('pushups', JSON.stringify(data)); }
+    function saveMoods() { localStorage.setItem('pushups_moods', JSON.stringify(moods)); }
+    function saveProfileData() { localStorage.setItem('pushups_profile', JSON.stringify(profile)); }
 
     function dateKey(d) {
       return d.getFullYear() + '-' +
@@ -283,8 +436,51 @@
 
     function todayKey() { return dateKey(new Date()); }
 
+    // --- Profile ---
+    function toggleProfile() {
+      profileOpen = !profileOpen;
+      const el = document.getElementById('profile');
+      el.classList.toggle('hidden', !profileOpen);
+      if (profileOpen) renderProfile();
+    }
+
+    function renderProfile() {
+      document.getElementById('prof-name').value = profile.name;
+      document.getElementById('prof-age').value = profile.age;
+      document.getElementById('prof-weight').value = profile.weight;
+      renderWeightDelta();
+    }
+
+    function saveProfile() {
+      profile.name = document.getElementById('prof-name').value;
+      profile.age = document.getElementById('prof-age').value;
+      saveProfileData();
+    }
+
+    function updateWeight() {
+      const val = parseFloat(document.getElementById('prof-weight').value);
+      if (isNaN(val) || val <= 0) return;
+      profile.weight = val;
+      profile.weightHistory.push({ date: todayKey(), value: val });
+      saveProfileData();
+      renderWeightDelta();
+    }
+
+    function renderWeightDelta() {
+      const el = document.getElementById('weight-delta');
+      const h = profile.weightHistory;
+      if (!h || h.length < 2) { el.textContent = ''; return; }
+      const first = h[0].value;
+      const current = h[h.length - 1].value;
+      const diff = current - first;
+      const sign = diff > 0 ? '+' : '';
+      el.textContent = `${sign}${diff.toFixed(1)} kg`;
+      el.className = 'weight-delta ' + (diff < 0 ? 'loss' : diff > 0 ? 'gain' : '');
+    }
+
+    // --- Day selection & pushups ---
     function selectDay(key) {
-      if (key > todayKey()) return; // no future days
+      if (key > todayKey()) return;
       selectedKey = key;
       render();
     }
@@ -297,18 +493,22 @@
       render();
     }
 
-    function getTotal() {
-      return Object.values(data).reduce((s, v) => s + v, 0);
+    // --- Mood ---
+    function setMood(emoji) {
+      if (moods[selectedKey] === emoji) delete moods[selectedKey];
+      else moods[selectedKey] = emoji;
+      saveMoods();
+      render();
     }
+
+    // --- Stats ---
+    function getTotal() { return Object.values(data).reduce((s, v) => s + v, 0); }
 
     function getStreak() {
       let d = new Date();
       let streak = 0;
       if (!data[dateKey(d)]) d.setDate(d.getDate() - 1);
-      while (data[dateKey(d)]) {
-        streak++;
-        d.setDate(d.getDate() - 1);
-      }
+      while (data[dateKey(d)]) { streak++; d.setDate(d.getDate() - 1); }
       return streak;
     }
 
@@ -319,6 +519,7 @@
       return `${d}.${m}.${y}`;
     }
 
+    // --- Rendering ---
     function renderStats() {
       document.getElementById('total').textContent = getTotal();
       document.getElementById('streak').textContent = getStreak();
@@ -332,9 +533,19 @@
       const opts = { weekday: 'long', day: 'numeric', month: 'long' };
       const label = date.toLocaleDateString('en-US', opts);
       document.getElementById('today-date').textContent =
-        isToday ? 'Today — ' + label : label;
-      const input = document.getElementById('today-input');
-      input.value = data[selectedKey] || '';
+        isToday ? 'Today \u2014 ' + label : label;
+      document.getElementById('today-input').value = data[selectedKey] || '';
+
+      // Mood buttons
+      const row = document.getElementById('mood-row');
+      row.innerHTML = '';
+      MOODS.forEach(emoji => {
+        const btn = document.createElement('button');
+        btn.className = 'mood-btn' + (moods[selectedKey] === emoji ? ' active' : '');
+        btn.textContent = emoji;
+        btn.addEventListener('click', () => setMood(emoji));
+        row.appendChild(btn);
+      });
     }
 
     function renderCalendar() {
@@ -366,13 +577,14 @@
         if (key === selectedKey) cls += ' selected';
         if (key === today) cls += ' is-today';
         el.className = cls;
-        el.innerHTML = `<span class="day-num">${day}</span>` +
-          (data[key] ? `<span class="day-count">${data[key]}</span>` : '');
+        let html = `<span class="day-num">${day}</span>`;
+        if (data[key]) html += `<span class="day-count">${data[key]}</span>`;
+        if (moods[key]) html += `<span class="day-mood">${moods[key]}</span>`;
+        el.innerHTML = html;
         if (!isFuture) el.addEventListener('click', () => selectDay(key));
         return el;
       }
 
-      // Previous month trailing days
       const prevDays = new Date(viewYear, viewMonth, 0).getDate();
       for (let i = startOffset - 1; i >= 0; i--) {
         const day = prevDays - i;
@@ -380,7 +592,6 @@
         grid.appendChild(dayCell(day, key, 'cal-day' + (data[key] ? ' has-data' : '')));
       }
 
-      // Current month days
       for (let day = 1; day <= daysInMonth; day++) {
         const key = dateKey(new Date(viewYear, viewMonth, day));
         let cls = 'cal-day current-month';
@@ -388,7 +599,6 @@
         grid.appendChild(dayCell(day, key, cls));
       }
 
-      // Next month leading days
       const totalCells = startOffset + daysInMonth;
       const remaining = (7 - (totalCells % 7)) % 7;
       for (let day = 1; day <= remaining; day++) {
@@ -418,10 +628,7 @@
 
     async function enableNotif() {
       const permission = await Notification.requestPermission();
-      if (permission !== 'granted') {
-        dismissNotif();
-        return;
-      }
+      if (permission !== 'granted') { dismissNotif(); return; }
       const time = document.getElementById('notif-hour').value || '09:00';
       localStorage.setItem('pushups_notif', 'enabled');
       localStorage.setItem('pushups_notif_time', time);
@@ -432,35 +639,26 @@
     function scheduleNotification() {
       const time = localStorage.getItem('pushups_notif_time');
       if (!time || localStorage.getItem('pushups_notif') !== 'enabled') return;
-
       const [h, m] = time.split(':').map(Number);
       const now = new Date();
       const target = new Date();
       target.setHours(h, m, 0, 0);
       if (target <= now) target.setDate(target.getDate() + 1);
-
-      const ms = target - now;
       setTimeout(() => {
         if (Notification.permission === 'granted') {
-          new Notification('Pushup Counter', {
-            body: 'Time to do your push-ups!',
-            icon: 'icon-192.png'
-          });
+          new Notification('Pushup Counter', { body: 'Time to do your push-ups!', icon: 'icon-192.png' });
         }
-        // Schedule next day
         scheduleNotification();
-      }, ms);
+      }, target - now);
     }
 
     function initNotifications() {
       const state = localStorage.getItem('pushups_notif');
       if (!state && 'Notification' in window) {
-        // First visit — show the banner
         document.getElementById('notif-banner').classList.remove('hidden');
       } else if (state === 'enabled') {
         scheduleNotification();
       }
-      // If 'dismissed' — do nothing, banner stays hidden forever
     }
 
     // Register service worker
