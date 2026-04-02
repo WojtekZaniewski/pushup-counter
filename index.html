@@ -244,8 +244,9 @@
 
     <div class="today">
       <div class="today-date" id="today-date"></div>
-      <input type="number" class="today-input" id="today-input"
-        inputmode="numeric" min="0" placeholder="0"
+      <input type="tel" class="today-input" id="today-input"
+        inputmode="numeric" pattern="[0-9]*" placeholder="0"
+        oninput="this.value=this.value.replace(/[^0-9]/g,'')"
         onchange="setPushups(this.value)" onkeydown="if(event.key==='Enter'){this.blur()}">
       <div class="today-hint">tap to type count</div>
     </div>
