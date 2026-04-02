@@ -481,6 +481,109 @@
     }
     .save-btn:active { opacity: 0.8; }
 
+    /* ── Workout tab ── */
+    .wo-goal-num {
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: var(--accent);
+      line-height: 1;
+    }
+    .wo-mode-row {
+      display: flex;
+      gap: 0.4rem;
+      margin-bottom: 0.75rem;
+    }
+    .wo-mode-btn {
+      flex: 1;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text2);
+      font-family: inherit;
+      font-size: 0.7rem;
+      padding: 0.45rem 0.3rem;
+      cursor: pointer;
+      transition: all 0.15s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .wo-mode-btn.active { border-color: var(--accent); color: var(--accent); background: var(--accent-dim); }
+    .wo-input-row { margin-bottom: 0.5rem; }
+    .wo-input-row label { display: block; font-size: 0.68rem; color: var(--text2); margin-bottom: 0.3rem; }
+    .wo-input-row input {
+      width: 100%;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      color: var(--text);
+      font-family: inherit;
+      font-size: 1rem;
+      padding: 0.5rem 0.7rem;
+    }
+    .wo-input-row input:focus { outline: none; border-color: var(--accent); }
+    .wo-preview {
+      margin-top: 0.6rem;
+      background: var(--accent-dim);
+      border-radius: 8px;
+      padding: 0.5rem 0.75rem;
+      font-size: 0.78rem;
+      color: var(--accent);
+      text-align: center;
+    }
+    .wo-progress-bar {
+      height: 6px;
+      background: var(--surface2);
+      border-radius: 3px;
+      margin-bottom: 0.35rem;
+      overflow: hidden;
+    }
+    .wo-progress-fill {
+      height: 100%;
+      background: var(--accent);
+      border-radius: 3px;
+      transition: width 0.3s;
+    }
+    .wo-set-item {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.65rem 0.75rem;
+      border-radius: 9px;
+      margin-bottom: 0.4rem;
+      background: var(--surface2);
+      cursor: pointer;
+      transition: all 0.15s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .wo-set-item.done {
+      opacity: 0.45;
+    }
+    .wo-set-item.done .wo-set-label { text-decoration: line-through; }
+    .wo-check {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      border: 2px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.7rem;
+      flex-shrink: 0;
+      transition: all 0.15s;
+    }
+    .wo-set-item.done .wo-check {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: var(--bg);
+    }
+    .wo-set-label { font-size: 0.85rem; flex: 1; }
+    .wo-set-reps { font-size: 0.75rem; color: var(--text2); }
+    .wo-done-msg {
+      text-align: center;
+      font-size: 1rem;
+      margin-top: 0.75rem;
+      color: var(--accent);
+    }
+
     .hidden { display: none !important; }
   </style>
 </head>
@@ -594,13 +697,12 @@
       <button class="save-btn" onclick="saveProfile()">Save profile</button>
     </div>
 
-    <!-- Daily goal / recommendation -->
+    <!-- Daily goal -->
     <div id="rec-section" class="hidden">
       <div class="rec-card">
         <div class="rec-num" id="rec-num">—</div>
         <div class="rec-label" id="rec-label"></div>
       </div>
-      <div id="rec-suggested" class="hidden" style="font-size:0.68rem;color:var(--text2);text-align:center;margin-top:0.4rem;margin-bottom:0.6rem;"></div>
     </div>
 
     <!-- PR -->
@@ -622,11 +724,70 @@
     </div>
   </div>
 
+  <!-- ── WORKOUT PAGE ── -->
+  <div class="page hidden" id="page-workout">
+    <h1>WORKOUT</h1>
+
+    <div class="card" id="workout-no-goal" style="text-align:center">
+      <div style="font-size:1.5rem;margin-bottom:0.5rem">🎯</div>
+      <div style="font-size:0.8rem;color:var(--text2);line-height:1.5">Set a daily goal in your Profile first,<br>then plan your workout here.</div>
+    </div>
+
+    <div id="workout-planner" class="hidden">
+      <!-- Goal summary -->
+      <div class="card" style="text-align:center;padding:0.9rem">
+        <div style="font-size:0.62rem;color:var(--text3);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:0.2rem">Today's goal</div>
+        <div class="wo-goal-num" id="wo-goal-num">0</div>
+        <div style="font-size:0.65rem;color:var(--text2)">push-ups</div>
+      </div>
+
+      <!-- Planner mode toggle -->
+      <div class="card">
+        <div class="section-title">Plan your sets</div>
+        <div class="wo-mode-row">
+          <button class="wo-mode-btn active" id="wo-mode-sets" onclick="setWoMode('sets')">By number of sets</button>
+          <button class="wo-mode-btn" id="wo-mode-reps" onclick="setWoMode('reps')">By reps per set</button>
+        </div>
+
+        <div class="wo-input-row" id="wo-sets-row">
+          <label>How many sets?</label>
+          <input type="tel" id="wo-sets-val" inputmode="numeric" placeholder="e.g. 5"
+            oninput="this.value=this.value.replace(/[^0-9]/g,''); previewPlan()">
+        </div>
+        <div class="wo-input-row hidden" id="wo-reps-row">
+          <label>Reps per set?</label>
+          <input type="tel" id="wo-reps-val" inputmode="numeric" placeholder="e.g. 20"
+            oninput="this.value=this.value.replace(/[^0-9]/g,''); previewPlan()">
+        </div>
+
+        <div class="wo-preview hidden" id="wo-preview"></div>
+
+        <button class="save-btn" onclick="generatePlan()" style="margin-top:0.75rem">Generate plan</button>
+      </div>
+
+      <!-- Set checklist -->
+      <div class="card hidden" id="wo-checklist-card">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.75rem">
+          <div class="section-title" style="margin:0">Today's sets</div>
+          <button onclick="resetPlan()" style="background:none;border:none;font-size:0.65rem;color:var(--text3);cursor:pointer;font-family:inherit">Reset</button>
+        </div>
+        <div class="wo-progress-bar"><div class="wo-progress-fill" id="wo-progress-fill"></div></div>
+        <div style="font-size:0.65rem;color:var(--text2);text-align:right;margin-bottom:0.75rem" id="wo-progress-label"></div>
+        <div id="wo-set-list"></div>
+        <div class="wo-done-msg hidden" id="wo-done-msg">🎉 Workout complete!</div>
+      </div>
+    </div>
+  </div>
+
   <!-- ── TAB BAR ── -->
   <div class="tab-bar">
     <button class="tab-btn active" id="tab-home" onclick="switchTab('home')">
       <span class="tab-icon">💪</span>
       <span>Tracker</span>
+    </button>
+    <button class="tab-btn" id="tab-workout" onclick="switchTab('workout')">
+      <span class="tab-icon">🏋️</span>
+      <span>Workout</span>
     </button>
     <button class="tab-btn" id="tab-profile" onclick="switchTab('profile')">
       <span class="tab-icon">👤</span>
@@ -638,9 +799,11 @@
     // ── State ──
     let data = {}, moods = {};
     let profile = { name: '', gender: '', age: '', height: '', weight: '', weightHistory: [], prs: [] };
+    let workout = { date: '', mode: 'sets', value: 5, plan: [], completed: [] };
     let viewYear, viewMonth, selectedKey;
     let currentTab = 'home';
     let currentTheme = 'default';
+    let woMode = 'sets';
 
     const MOODS = ['💀','😓','😐','😊','🔥'];
 
@@ -663,6 +826,7 @@
     function loadAll() {
       try { data    = JSON.parse(localStorage.getItem('pushups'))         || {}; } catch { data = {}; }
       try { moods   = JSON.parse(localStorage.getItem('pushups_moods'))   || {}; } catch { moods = {}; }
+      try { const w = JSON.parse(localStorage.getItem('pushups_workout')); if (w) workout = w; } catch {}
       try {
         const p = JSON.parse(localStorage.getItem('pushups_profile'));
         if (p) profile = { name:'', gender:'', age:'', height:'', weight:'', weightHistory:[], prs:[], ...p };
@@ -671,18 +835,22 @@
       applyTheme(currentTheme);
     }
 
-    function saveData()    { localStorage.setItem('pushups',         JSON.stringify(data)); }
-    function saveMoods()   { localStorage.setItem('pushups_moods',   JSON.stringify(moods)); }
-    function saveProfileD(){ localStorage.setItem('pushups_profile', JSON.stringify(profile)); }
+    function saveData()     { localStorage.setItem('pushups',          JSON.stringify(data)); }
+    function saveMoods()    { localStorage.setItem('pushups_moods',    JSON.stringify(moods)); }
+    function saveProfileD() { localStorage.setItem('pushups_profile',  JSON.stringify(profile)); }
+    function saveWorkout()  { localStorage.setItem('pushups_workout',  JSON.stringify(workout)); }
 
     // ── Tabs ──
     function switchTab(tab) {
       currentTab = tab;
       document.getElementById('page-home').classList.toggle('hidden', tab !== 'home');
+      document.getElementById('page-workout').classList.toggle('hidden', tab !== 'workout');
       document.getElementById('page-profile').classList.toggle('hidden', tab !== 'profile');
       document.getElementById('tab-home').classList.toggle('active', tab === 'home');
+      document.getElementById('tab-workout').classList.toggle('active', tab === 'workout');
       document.getElementById('tab-profile').classList.toggle('active', tab === 'profile');
       if (tab === 'profile') renderProfilePage();
+      if (tab === 'workout') renderWorkoutPage();
     }
 
     // ── Theme ──
@@ -826,25 +994,14 @@
         wEl.textContent = '';
       }
 
-      // Daily goal / recommendation
+      // Daily goal
       const recSec = document.getElementById('rec-section');
-      const suggested = profile.gender ? REC[profile.gender] : null;
-      const active = profile.goal || suggested;
-      if (active) {
+      if (profile.goal) {
         recSec.classList.remove('hidden');
         const avg = getAvgDaily();
-        document.getElementById('rec-num').textContent = profile.goal || suggested;
+        document.getElementById('rec-num').textContent = profile.goal;
         document.getElementById('rec-label').textContent =
-          profile.goal
-            ? (avg > 0 ? `your goal · avg ${avg} / day` : 'your daily goal')
-            : (avg > 0 ? `suggested · avg ${avg} / day` : 'suggested for your gender');
-        const sugEl = document.getElementById('rec-suggested');
-        if (profile.goal && suggested) {
-          sugEl.classList.remove('hidden');
-          sugEl.textContent = `suggested for your gender: ${suggested} / day`;
-        } else {
-          sugEl.classList.add('hidden');
-        }
+          avg > 0 ? `your daily goal · avg ${avg} / day` : 'your daily goal';
       } else {
         recSec.classList.add('hidden');
       }
@@ -940,14 +1097,13 @@
                 : date.toLocaleDateString('en-US', opts);
       document.getElementById('today-input').value = data[selectedKey] || '';
 
-      // Daily avg vs recommendation
+      // Daily avg vs goal
       const avgEl = document.getElementById('daily-avg');
-      const goal = profile.goal || (profile.gender ? REC[profile.gender] : null);
-      if (goal) {
+      if (profile.goal) {
         const avg = getAvgDaily();
         avgEl.innerHTML = avg > 0
-          ? `avg: <span>${avg}</span> · goal: <span>${goal}</span>`
-          : `daily goal: <span>${goal}</span>`;
+          ? `avg: <span>${avg}</span> · goal: <span>${profile.goal}</span>`
+          : `daily goal: <span>${profile.goal}</span>`;
       } else {
         avgEl.textContent = '';
       }
@@ -1024,6 +1180,135 @@
       if (viewMonth > 11) { viewMonth = 0; viewYear++; }
       if (viewMonth < 0)  { viewMonth = 11; viewYear--; }
       renderCalendar();
+    }
+
+    // ── Workout ──
+    function renderWorkoutPage() {
+      const goal = profile.goal;
+      document.getElementById('workout-no-goal').classList.toggle('hidden', !!goal);
+      document.getElementById('workout-planner').classList.toggle('hidden', !goal);
+      if (!goal) return;
+
+      document.getElementById('wo-goal-num').textContent = goal;
+
+      // Reset plan if it's a new day
+      if (workout.date !== todayKey()) {
+        workout = { date: todayKey(), mode: 'sets', value: null, plan: [], completed: [] };
+        saveWorkout();
+      }
+
+      // Restore mode
+      woMode = workout.mode || 'sets';
+      setWoMode(woMode, false);
+
+      // Restore input values
+      if (workout.value) {
+        if (woMode === 'sets') document.getElementById('wo-sets-val').value = workout.value;
+        else document.getElementById('wo-reps-val').value = workout.value;
+      }
+
+      renderChecklist();
+    }
+
+    function setWoMode(mode, preview = true) {
+      woMode = mode;
+      document.getElementById('wo-mode-sets').classList.toggle('active', mode === 'sets');
+      document.getElementById('wo-mode-reps').classList.toggle('active', mode === 'reps');
+      document.getElementById('wo-sets-row').classList.toggle('hidden', mode !== 'sets');
+      document.getElementById('wo-reps-row').classList.toggle('hidden', mode !== 'reps');
+      document.getElementById('wo-preview').classList.add('hidden');
+      if (preview) previewPlan();
+    }
+
+    function previewPlan() {
+      const goal = profile.goal;
+      if (!goal) return;
+      const preview = document.getElementById('wo-preview');
+      if (woMode === 'sets') {
+        const sets = parseInt(document.getElementById('wo-sets-val').value, 10);
+        if (!sets || sets <= 0) { preview.classList.add('hidden'); return; }
+        const reps = Math.ceil(goal / sets);
+        preview.textContent = `${sets} sets × ${reps} reps = ${sets * reps} push-ups`;
+        preview.classList.remove('hidden');
+      } else {
+        const reps = parseInt(document.getElementById('wo-reps-val').value, 10);
+        if (!reps || reps <= 0) { preview.classList.add('hidden'); return; }
+        const sets = Math.ceil(goal / reps);
+        preview.textContent = `${sets} sets × ${reps} reps = ${sets * reps} push-ups`;
+        preview.classList.remove('hidden');
+      }
+    }
+
+    function generatePlan() {
+      const goal = profile.goal;
+      if (!goal) return;
+      let sets, repsPerSet;
+      if (woMode === 'sets') {
+        sets = parseInt(document.getElementById('wo-sets-val').value, 10);
+        if (!sets || sets <= 0) return;
+        repsPerSet = Math.ceil(goal / sets);
+      } else {
+        repsPerSet = parseInt(document.getElementById('wo-reps-val').value, 10);
+        if (!repsPerSet || repsPerSet <= 0) return;
+        sets = Math.ceil(goal / repsPerSet);
+      }
+      workout = {
+        date: todayKey(),
+        mode: woMode,
+        value: woMode === 'sets' ? sets : repsPerSet,
+        plan: Array.from({ length: sets }, () => repsPerSet),
+        completed: Array(sets).fill(false)
+      };
+      saveWorkout();
+      renderChecklist();
+    }
+
+    function toggleSet(i) {
+      workout.completed[i] = !workout.completed[i];
+      saveWorkout();
+      renderChecklist();
+    }
+
+    function resetPlan() {
+      workout.plan = [];
+      workout.completed = [];
+      workout.value = null;
+      saveWorkout();
+      document.getElementById('wo-checklist-card').classList.add('hidden');
+      document.getElementById('wo-sets-val').value = '';
+      document.getElementById('wo-reps-val').value = '';
+      document.getElementById('wo-preview').classList.add('hidden');
+    }
+
+    function renderChecklist() {
+      const card = document.getElementById('wo-checklist-card');
+      if (!workout.plan || !workout.plan.length) { card.classList.add('hidden'); return; }
+      card.classList.remove('hidden');
+
+      const done = workout.completed.filter(Boolean).length;
+      const total = workout.plan.length;
+      const totalReps = workout.plan.reduce((s, r) => s + r, 0);
+      const doneReps = workout.plan.reduce((s, r, i) => s + (workout.completed[i] ? r : 0), 0);
+
+      document.getElementById('wo-progress-fill').style.width = `${(done / total) * 100}%`;
+      document.getElementById('wo-progress-label').textContent = `${done}/${total} sets · ${doneReps}/${totalReps} reps`;
+
+      const list = document.getElementById('wo-set-list');
+      list.innerHTML = '';
+      workout.plan.forEach((reps, i) => {
+        const el = document.createElement('div');
+        el.className = 'wo-set-item' + (workout.completed[i] ? ' done' : '');
+        el.innerHTML = `
+          <div class="wo-check">${workout.completed[i] ? '✓' : ''}</div>
+          <span class="wo-set-label">Set ${i + 1}</span>
+          <span class="wo-set-reps">${reps} reps</span>
+        `;
+        el.addEventListener('click', () => toggleSet(i));
+        list.appendChild(el);
+      });
+
+      const allDone = done === total;
+      document.getElementById('wo-done-msg').classList.toggle('hidden', !allDone);
     }
 
     // ── Notifications ──
