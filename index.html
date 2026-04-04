@@ -305,56 +305,303 @@
       --theme-heading-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
     }
 
-    /* ── Theme custom styling hooks ── */
+    /* ── Country themes ── */
+    [data-theme="japan"] {
+      --bg: #1a0810;
+      --surface: #2a0e18;
+      --surface2: #3d1425;
+      --accent: #e84057;
+      --accent-dim: #e8405718;
+      --accent2: #f0c0c8;
+      --accent3: #d4a050;
+      --text: #fff0f2;
+      --text2: #d08090;
+      --text3: #804050;
+      --border: #4d1828;
+      --tab-bg: #1e0a12;
+      --loss: #90d0a0;
+      --gain: #e84057;
+      --theme-font: "Hiragino Sans", "Yu Gothic", "Segoe UI", sans-serif;
+      --theme-radius: 16px;
+      --theme-card-border: none;
+      --theme-card-shadow: 0 2px 15px rgba(232, 64, 87, 0.08);
+      --theme-btn-glow: none;
+      --theme-heading-style: normal;
+      --theme-heading-shadow: none;
+    }
+
+    [data-theme="brazil"] {
+      --bg: #001a0a;
+      --surface: #002e12;
+      --surface2: #00421a;
+      --accent: #ffd700;
+      --accent-dim: #ffd70018;
+      --accent2: #009c3b;
+      --accent3: #002776;
+      --text: #e8ffe0;
+      --text2: #80c060;
+      --text3: #406030;
+      --border: #003d18;
+      --tab-bg: #001008;
+      --loss: #009c3b;
+      --gain: #e04040;
+      --theme-font: "Trebuchet MS", "Segoe UI", sans-serif;
+      --theme-radius: 14px;
+      --theme-card-border: 1px solid #003d18;
+      --theme-card-shadow: 0 3px 12px rgba(255, 215, 0, 0.08);
+      --theme-btn-glow: 0 0 8px rgba(255, 215, 0, 0.2);
+      --theme-heading-style: uppercase;
+      --theme-heading-shadow: 0 0 8px rgba(255, 215, 0, 0.3);
+    }
+
+    [data-theme="cameroon"] {
+      --bg: #0f1a05;
+      --surface: #1a2a0a;
+      --surface2: #253812;
+      --accent: #fcd116;
+      --accent-dim: #fcd11618;
+      --accent2: #ce1126;
+      --accent3: #009739;
+      --text: #f0f0d0;
+      --text2: #a0a060;
+      --text3: #606030;
+      --border: #2d3d12;
+      --tab-bg: #0b1404;
+      --loss: #009739;
+      --gain: #ce1126;
+      --theme-font: "Georgia", "Segoe UI", serif;
+      --theme-radius: 10px;
+      --theme-card-border: 2px solid #2d3d12;
+      --theme-card-shadow: 0 2px 8px rgba(252, 209, 22, 0.06);
+      --theme-btn-glow: none;
+      --theme-heading-style: uppercase;
+      --theme-heading-shadow: none;
+    }
+
+    [data-theme="poland"] {
+      --bg: #0a0408;
+      --surface: #1a0c14;
+      --surface2: #28141e;
+      --accent: #dc143c;
+      --accent-dim: #dc143c18;
+      --accent2: #f0f0f0;
+      --accent3: #e8a0a8;
+      --text: #fff0f4;
+      --text2: #c07080;
+      --text3: #703040;
+      --border: #3d1828;
+      --tab-bg: #0d0608;
+      --loss: #40b060;
+      --gain: #dc143c;
+      --theme-font: "Segoe UI", -apple-system, sans-serif;
+      --theme-radius: 12px;
+      --theme-card-border: none;
+      --theme-card-shadow: 0 2px 12px rgba(220, 20, 60, 0.08);
+      --theme-btn-glow: none;
+      --theme-heading-style: normal;
+      --theme-heading-shadow: none;
+    }
+
+    /* ── Special themes ── */
+    [data-theme="lenusia"] {
+      --bg: #fff5f9;
+      --surface: #ffffff;
+      --surface2: #fff0f5;
+      --accent: #ff69b4;
+      --accent-dim: #ff69b415;
+      --accent2: #dda0dd;
+      --accent3: #ff8cc6;
+      --text: #4a2040;
+      --text2: #b06090;
+      --text3: #d4a0c0;
+      --border: #ffd0e8;
+      --tab-bg: #fff0f6;
+      --loss: #6aaf6a;
+      --gain: #f06090;
+      --theme-font: "Comic Sans MS", "Chalkboard SE", "Segoe Print", cursive;
+      --theme-radius: 22px;
+      --theme-card-border: 2px solid #ffc0e0;
+      --theme-card-shadow: 0 4px 20px rgba(255, 105, 180, 0.12);
+      --theme-btn-glow: 0 0 12px rgba(255, 105, 180, 0.3);
+      --theme-heading-style: normal;
+      --theme-heading-shadow: 0 0 15px rgba(255, 105, 180, 0.4);
+    }
+
+    [data-theme="anime"] {
+      --bg: #0a0020;
+      --surface: #140035;
+      --surface2: #1e004d;
+      --accent: #ff4da6;
+      --accent-dim: #ff4da618;
+      --accent2: #00d4ff;
+      --accent3: #ffcc00;
+      --text: #ffe0f5;
+      --text2: #c080d0;
+      --text3: #6a3080;
+      --border: #30005a;
+      --tab-bg: #080018;
+      --loss: #00d4ff;
+      --gain: #ff3366;
+      --theme-font: "Segoe UI", "Trebuchet MS", sans-serif;
+      --theme-radius: 18px;
+      --theme-card-border: 2px solid rgba(255, 77, 166, 0.3);
+      --theme-card-shadow: 0 0 20px rgba(255, 77, 166, 0.1), 0 0 40px rgba(0, 212, 255, 0.05);
+      --theme-btn-glow: 0 0 12px rgba(255, 77, 166, 0.35);
+      --theme-heading-style: uppercase;
+      --theme-heading-shadow: 0 0 25px rgba(0, 212, 255, 0.5);
+    }
+
+    /* Lenusia flower background */
+    [data-theme="lenusia"] body::before {
+      content: '';
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background:
+        radial-gradient(circle at 15% 20%, rgba(255,182,193,0.25) 0%, transparent 40%),
+        radial-gradient(circle at 85% 15%, rgba(221,160,221,0.2) 0%, transparent 35%),
+        radial-gradient(circle at 50% 80%, rgba(255,192,203,0.2) 0%, transparent 40%),
+        radial-gradient(circle at 20% 70%, rgba(255,105,180,0.15) 0%, transparent 30%),
+        radial-gradient(circle at 80% 60%, rgba(221,160,221,0.15) 0%, transparent 35%);
+      pointer-events: none;
+      z-index: 0;
+    }
+    [data-theme="lenusia"] body::after {
+      content: '🌸 🌺 🌷 💮 🌻 🌸 🌺 🌷 💮 🌻 🌸 🌺 🌷';
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      font-size: 1.6rem;
+      letter-spacing: 0.5rem;
+      text-align: center;
+      padding: 0.3rem;
+      opacity: 0.18;
+      pointer-events: none;
+      z-index: 0;
+      word-spacing: 0.3rem;
+      line-height: 2;
+      white-space: nowrap;
+      overflow: hidden;
+    }
+    [data-theme="lenusia"] .page,
+    [data-theme="lenusia"] .tab-bar { position: relative; z-index: 1; }
+    [data-theme="lenusia"] .card {
+      background: rgba(255,255,255,0.85);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+    }
+    [data-theme="lenusia"] .tab-bar {
+      background: rgba(255,240,246,0.9);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+    }
+    [data-theme="lenusia"] h1 { color: #ff69b4; }
+    [data-theme="lenusia"] .stat { border-radius: 22px; background: rgba(255,255,255,0.7); }
+    [data-theme="lenusia"] .save-btn { background: linear-gradient(135deg, #ff69b4, #dda0dd); }
+
+    /* Anime speed lines + glow */
+    [data-theme="anime"] body::before {
+      content: '';
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background:
+        radial-gradient(ellipse at 50% 50%, transparent 40%, rgba(255,77,166,0.03) 60%, transparent 80%),
+        conic-gradient(from 0deg at 50% 50%, transparent 0deg, rgba(0,212,255,0.02) 30deg, transparent 60deg, rgba(255,77,166,0.02) 90deg, transparent 120deg, rgba(0,212,255,0.02) 150deg, transparent 180deg, rgba(255,77,166,0.02) 210deg, transparent 240deg, rgba(0,212,255,0.02) 270deg, transparent 300deg, rgba(255,77,166,0.02) 330deg, transparent 360deg);
+      pointer-events: none;
+      z-index: 0;
+    }
+    [data-theme="anime"] .page { position: relative; z-index: 1; }
+    [data-theme="anime"] .tab-bar { position: relative; z-index: 1;
+      background: linear-gradient(90deg, #080018, #140035, #080018);
+    }
+    [data-theme="anime"] .card {
+      border-image: linear-gradient(135deg, rgba(255,77,166,0.4), rgba(0,212,255,0.4)) 1;
+      border-style: solid;
+      border-width: 2px;
+      border-radius: 0;
+      overflow: hidden;
+    }
+    [data-theme="anime"] .save-btn { background: linear-gradient(135deg, #ff4da6, #00d4ff); }
+
+    /* Japan theme - cherry blossom touches */
+    [data-theme="japan"] .card {
+      background: linear-gradient(135deg, #2a0e18, #301020);
+    }
+    [data-theme="japan"] .save-btn { background: linear-gradient(90deg, #e84057, #d4a050); }
+
+    /* Brazil theme */
+    [data-theme="brazil"] .save-btn { background: linear-gradient(90deg, #ffd700, #009c3b); color: #001a0a; }
+
+    /* Theme custom styling hooks — applies to all themes that define --theme-font */
     [data-theme="neon"] body, [data-theme="retro"] body, [data-theme="vapor"] body,
-    [data-theme="paper"] body, [data-theme="arctic"] body, [data-theme="terminal"] body {
+    [data-theme="paper"] body, [data-theme="arctic"] body, [data-theme="terminal"] body,
+    [data-theme="japan"] body, [data-theme="brazil"] body, [data-theme="cameroon"] body,
+    [data-theme="poland"] body, [data-theme="lenusia"] body, [data-theme="anime"] body {
       font-family: var(--theme-font);
     }
     [data-theme="neon"] .card, [data-theme="retro"] .card, [data-theme="vapor"] .card,
-    [data-theme="paper"] .card, [data-theme="arctic"] .card, [data-theme="terminal"] .card {
+    [data-theme="paper"] .card, [data-theme="arctic"] .card, [data-theme="terminal"] .card,
+    [data-theme="japan"] .card, [data-theme="brazil"] .card, [data-theme="cameroon"] .card,
+    [data-theme="poland"] .card, [data-theme="anime"] .card {
       border-radius: var(--theme-radius);
       border: var(--theme-card-border);
       box-shadow: var(--theme-card-shadow);
     }
     [data-theme="neon"] .stat, [data-theme="retro"] .stat, [data-theme="vapor"] .stat,
-    [data-theme="paper"] .stat, [data-theme="arctic"] .stat, [data-theme="terminal"] .stat {
+    [data-theme="paper"] .stat, [data-theme="arctic"] .stat, [data-theme="terminal"] .stat,
+    [data-theme="japan"] .stat, [data-theme="brazil"] .stat, [data-theme="cameroon"] .stat,
+    [data-theme="poland"] .stat, [data-theme="anime"] .stat {
       border-radius: var(--theme-radius);
     }
     [data-theme="neon"] .save-btn, [data-theme="retro"] .save-btn, [data-theme="vapor"] .save-btn,
-    [data-theme="paper"] .save-btn, [data-theme="arctic"] .save-btn, [data-theme="terminal"] .save-btn {
+    [data-theme="paper"] .save-btn, [data-theme="arctic"] .save-btn, [data-theme="terminal"] .save-btn,
+    [data-theme="japan"] .save-btn, [data-theme="brazil"] .save-btn, [data-theme="cameroon"] .save-btn,
+    [data-theme="poland"] .save-btn, [data-theme="anime"] .save-btn {
       border-radius: var(--theme-radius);
       box-shadow: var(--theme-btn-glow);
     }
     [data-theme="neon"] h1, [data-theme="retro"] h1, [data-theme="vapor"] h1,
-    [data-theme="paper"] h1, [data-theme="arctic"] h1, [data-theme="terminal"] h1 {
+    [data-theme="paper"] h1, [data-theme="arctic"] h1, [data-theme="terminal"] h1,
+    [data-theme="japan"] h1, [data-theme="brazil"] h1, [data-theme="cameroon"] h1,
+    [data-theme="poland"] h1, [data-theme="anime"] h1 {
       font-variant: var(--theme-heading-style);
       text-shadow: var(--theme-heading-shadow);
     }
     [data-theme="neon"] .tab-btn, [data-theme="retro"] .tab-btn, [data-theme="vapor"] .tab-btn,
-    [data-theme="paper"] .tab-btn, [data-theme="arctic"] .tab-btn, [data-theme="terminal"] .tab-btn {
+    [data-theme="paper"] .tab-btn, [data-theme="arctic"] .tab-btn, [data-theme="terminal"] .tab-btn,
+    [data-theme="japan"] .tab-btn, [data-theme="brazil"] .tab-btn, [data-theme="cameroon"] .tab-btn,
+    [data-theme="poland"] .tab-btn, [data-theme="lenusia"] .tab-btn, [data-theme="anime"] .tab-btn {
       font-family: var(--theme-font);
     }
     [data-theme="neon"] .today-input, [data-theme="retro"] .today-input, [data-theme="vapor"] .today-input,
-    [data-theme="paper"] .today-input, [data-theme="arctic"] .today-input, [data-theme="terminal"] .today-input {
+    [data-theme="paper"] .today-input, [data-theme="arctic"] .today-input, [data-theme="terminal"] .today-input,
+    [data-theme="japan"] .today-input, [data-theme="brazil"] .today-input, [data-theme="cameroon"] .today-input,
+    [data-theme="poland"] .today-input, [data-theme="lenusia"] .today-input, [data-theme="anime"] .today-input {
       border-radius: var(--theme-radius);
       font-family: var(--theme-font);
     }
     [data-theme="neon"] .wo-mode-btn, [data-theme="retro"] .wo-mode-btn, [data-theme="vapor"] .wo-mode-btn,
-    [data-theme="paper"] .wo-mode-btn, [data-theme="arctic"] .wo-mode-btn, [data-theme="terminal"] .wo-mode-btn {
+    [data-theme="paper"] .wo-mode-btn, [data-theme="arctic"] .wo-mode-btn, [data-theme="terminal"] .wo-mode-btn,
+    [data-theme="japan"] .wo-mode-btn, [data-theme="brazil"] .wo-mode-btn, [data-theme="cameroon"] .wo-mode-btn,
+    [data-theme="poland"] .wo-mode-btn, [data-theme="lenusia"] .wo-mode-btn, [data-theme="anime"] .wo-mode-btn {
       border-radius: var(--theme-radius);
       font-family: var(--theme-font);
     }
     [data-theme="neon"] .gender-btn, [data-theme="retro"] .gender-btn, [data-theme="vapor"] .gender-btn,
-    [data-theme="paper"] .gender-btn, [data-theme="arctic"] .gender-btn, [data-theme="terminal"] .gender-btn {
+    [data-theme="paper"] .gender-btn, [data-theme="arctic"] .gender-btn, [data-theme="terminal"] .gender-btn,
+    [data-theme="japan"] .gender-btn, [data-theme="brazil"] .gender-btn, [data-theme="cameroon"] .gender-btn,
+    [data-theme="poland"] .gender-btn, [data-theme="lenusia"] .gender-btn, [data-theme="anime"] .gender-btn {
       border-radius: var(--theme-radius);
     }
     [data-theme="neon"] .pfield input, [data-theme="retro"] .pfield input, [data-theme="vapor"] .pfield input,
-    [data-theme="paper"] .pfield input, [data-theme="arctic"] .pfield input, [data-theme="terminal"] .pfield input {
+    [data-theme="paper"] .pfield input, [data-theme="arctic"] .pfield input, [data-theme="terminal"] .pfield input,
+    [data-theme="japan"] .pfield input, [data-theme="brazil"] .pfield input, [data-theme="cameroon"] .pfield input,
+    [data-theme="poland"] .pfield input, [data-theme="lenusia"] .pfield input, [data-theme="anime"] .pfield input {
       border-radius: var(--theme-radius);
       font-family: var(--theme-font);
     }
     [data-theme="neon"] .wo-input-row input, [data-theme="retro"] .wo-input-row input, [data-theme="vapor"] .wo-input-row input,
-    [data-theme="paper"] .wo-input-row input, [data-theme="arctic"] .wo-input-row input, [data-theme="terminal"] .wo-input-row input {
+    [data-theme="paper"] .wo-input-row input, [data-theme="arctic"] .wo-input-row input, [data-theme="terminal"] .wo-input-row input,
+    [data-theme="japan"] .wo-input-row input, [data-theme="brazil"] .wo-input-row input, [data-theme="cameroon"] .wo-input-row input,
+    [data-theme="poland"] .wo-input-row input, [data-theme="lenusia"] .wo-input-row input, [data-theme="anime"] .wo-input-row input {
       border-radius: var(--theme-radius);
       font-family: var(--theme-font);
     }
@@ -1349,6 +1596,14 @@
       </div>
     </div>
 
+    <div class="card" id="health-card">
+      <div class="section-title">Apple Health</div>
+      <div style="font-size:0.68rem;color:var(--text2);line-height:1.5;margin-bottom:0.7rem">
+        Export your fitness data as CSV to import into Apple Health, Google Fit, or any tracking app.
+      </div>
+      <button class="save-btn" onclick="exportHealthData()" style="font-size:0.75rem">Export all data (.csv)</button>
+    </div>
+
     <div class="card">
       <div class="section-title">Theme</div>
       <div class="theme-grid" id="theme-grid"></div>
@@ -1533,6 +1788,12 @@
       { id: 'paper',     icon: '📝', name: 'Paper' },
       { id: 'arctic',    icon: '🧊', name: 'Arctic' },
       { id: 'terminal',  icon: '💻', name: 'Terminal' },
+      { id: 'japan',     icon: '🇯🇵', name: 'Japan' },
+      { id: 'brazil',    icon: '🇧🇷', name: 'Brazil' },
+      { id: 'cameroon',  icon: '🇨🇲', name: 'Cameroon' },
+      { id: 'poland',    icon: '🇵🇱', name: 'Poland' },
+      { id: 'lenusia',   icon: '🌸', name: 'Lenusia' },
+      { id: 'anime',     icon: '⛩️', name: 'Anime' },
     ];
 
     const REC = { m: 50, f: 30 };
@@ -1627,6 +1888,39 @@
       else document.documentElement.setAttribute('data-theme', id);
       currentTheme = id;
       localStorage.setItem('pushups_theme', id);
+    }
+
+    function exportHealthData() {
+      let csv = 'Date,Type,Value,Unit,Duration_min,Calories,Note\n';
+      // Pushup data
+      Object.entries(data).forEach(function(pair) {
+        csv += pair[0] + ',Pushups,' + pair[1] + ',reps,,\n';
+      });
+      // Plank data
+      Object.entries(planksData).forEach(function(pair) {
+        csv += pair[0] + ',Planks,' + pair[1] + ',seconds,,\n';
+      });
+      // Activity log
+      activityLog.forEach(function(e) {
+        csv += e.date + ',' + e.activity.replace(/,/g, ';') + ',' + e.calories + ',kcal,' + e.duration + ',' + e.calories + ',' + (e.note || '').replace(/,/g, ';') + '\n';
+      });
+      // Weight history
+      (profile.weightHistory || []).forEach(function(w) {
+        csv += w.date + ',Weight,' + w.value + ',kg,,\n';
+      });
+      // Step data
+      Object.entries(stepData).forEach(function(pair) {
+        csv += pair[0] + ',Steps,' + pair[1].steps + ',steps,,' + pair[1].calories + ',dist:' + pair[1].distance + 'km\n';
+      });
+
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'fitness-tracker-export-' + todayKey() + '.csv';
+      a.click();
+      URL.revokeObjectURL(url);
+      showToast('Data exported!');
     }
 
     function renderThemeGrid() {
@@ -2147,29 +2441,17 @@
       renderActLog();
     }
 
-    function getStepTodayKcal() {
-      return (stepData[todayKey()] || {}).calories || 0;
-    }
-
-    function getStepWeekKcal() {
-      const cutoff = dateKey(new Date(Date.now() - 6 * 86400000));
-      let total = 0;
-      for (const [d, v] of Object.entries(stepData)) {
-        if (d >= cutoff) total += (v.calories || 0);
-      }
-      return total;
-    }
-
     function getActTodayKcal() {
       const today = todayKey();
       const logCal = activityLog.filter(e => e.date === today).reduce((s, e) => s + e.calories, 0);
-      return logCal + getStepTodayKcal();
+      // Add live step calories only if step counter is running (not yet logged)
+      const liveSteps = stepTracking ? ((stepData[todayKey()] || {}).calories || 0) : 0;
+      return logCal + liveSteps;
     }
 
     function getActWeekKcal() {
       const cutoff = dateKey(new Date(Date.now() - 6 * 86400000));
-      const logCal = activityLog.filter(e => e.date >= cutoff).reduce((s, e) => s + e.calories, 0);
-      return logCal + getStepWeekKcal();
+      return activityLog.filter(e => e.date >= cutoff).reduce((s, e) => s + e.calories, 0);
     }
 
     function getActStreak() {
@@ -2384,8 +2666,36 @@
         stepTracking = false;
         stopStepDetection();
         saveStepData();
+
+        // Auto-log steps to activity log if any steps were taken
+        const today = stepData[todayKey()];
+        if (today && today.steps > 0 && today.calories > 0) {
+          const duration = Math.max(1, Math.round(today.steps / 100)); // ~100 steps/min
+          const entry = {
+            id: Date.now().toString(),
+            date: todayKey(),
+            time: new Date().toTimeString().slice(0, 5),
+            activity: 'Walking (steps)',
+            duration: duration,
+            calories: today.calories,
+            met: 3.5,
+            note: today.steps + ' steps · ' + today.distance.toFixed(2) + ' km',
+            source: 'steps'
+          };
+          activityLog.unshift(entry);
+          saveActivityLog();
+          showToast('Logged ' + today.steps + ' steps · ' + today.calories + ' kcal');
+        }
+
         renderStepCounter();
         renderActStats();
+        renderActLog();
+
+        // Scroll to activity log
+        setTimeout(function() {
+          const logEl = document.getElementById('act-log');
+          if (logEl) logEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 100);
       } else {
         stepTracking = true;
         startStepDetection();
@@ -2462,7 +2772,8 @@
       stepData[today].distance = parseFloat((stepData[today].steps * strideLengthM / 1000).toFixed(2));
 
       const weight = parseFloat(profile.weight) || 70;
-      stepData[today].calories = Math.round(stepData[today].steps * 0.04 * weight);
+      // MET 3.5 walking × 3.5 × weight / 200 / ~100 steps per min ≈ 0.0006 × weight per step
+      stepData[today].calories = Math.round(stepData[today].steps * 0.0005 * weight);
 
       stepData[today].lastUpdated = new Date().toISOString();
 
