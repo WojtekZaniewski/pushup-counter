@@ -1,4 +1,4 @@
-const CACHE = 'pushups-v15';
+const CACHE = 'pushups-v16';
 const ASSETS = ['./index.html', './manifest.json', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', e => {
