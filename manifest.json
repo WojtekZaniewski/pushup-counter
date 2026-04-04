@@ -1,6 +1,6 @@
 {
-  "name": "Pushup Counter",
-  "short_name": "Pushups",
+  "name": "Fitness Tracker",
+  "short_name": "Fitness",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#0a0a0a",

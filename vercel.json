@@ -1,0 +1,7 @@
+{
+  "functions": {
+    "api/calories.js": {
+      "maxDuration": 15
+    }
+  }
+}
