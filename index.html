@@ -749,6 +749,28 @@
     #page-activities h1 { color: var(--accent3); }
     #page-activities .stat-value { color: var(--accent3); }
 
+    /* ── Step counter ── */
+    .step-display { text-align: center; margin-bottom: 0.75rem; }
+    .step-count { font-size: 2.8rem; font-weight: 700; color: var(--accent3); line-height: 1; }
+    .step-label { font-size: 0.6rem; color: var(--text3); text-transform: uppercase; letter-spacing: 0.1em; margin-top: 0.15rem; }
+    .step-metrics { display: flex; gap: 0.5rem; margin-bottom: 0.75rem; }
+    .step-metric { flex: 1; background: var(--surface2); border-radius: 8px; padding: 0.5rem; text-align: center; }
+    .step-metric-val { font-size: 1.1rem; font-weight: 700; color: var(--accent3); display: block; }
+    .step-metric-label { font-size: 0.55rem; color: var(--text3); text-transform: uppercase; letter-spacing: 0.08em; }
+    .step-status { font-size: 0.65rem; color: var(--text2); text-align: center; margin-top: 0.5rem; }
+    @keyframes pulse-dot { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+    .step-active-indicator { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--accent3); animation: pulse-dot 1.2s ease-in-out infinite; margin-right: 0.35rem; vertical-align: middle; }
+
+    /* ── BMR / Weight goals ── */
+    .bmr-row { display: flex; justify-content: space-between; align-items: center; padding: 0.3rem 0; }
+    .bmr-label { font-size: 0.72rem; color: var(--text2); }
+    .bmr-value { font-size: 0.78rem; font-weight: 700; color: var(--text); }
+    .bmr-highlight { color: var(--accent); font-size: 0.85rem; }
+    .bmr-note { font-size: 0.6rem; color: var(--text3); text-align: center; margin: 0.3rem 0; }
+    .bmr-divider { height: 1px; background: var(--border); margin: 0.5rem 0; }
+    .wm-warning .bmr-value { color: var(--gain); }
+    .wm-eta { font-size: 0.6rem; color: var(--text3); margin-bottom: 0.35rem; padding-left: 0.5rem; }
+
     /* ── Toast ── */
     .toast {
       position: fixed;
@@ -891,6 +913,27 @@
       </div>
     </div>
 
+    <!-- Step counter -->
+    <div class="card" id="step-counter-card">
+      <div class="section-title">Step counter 👟</div>
+      <div class="step-display">
+        <div class="step-count" id="step-count-display">0</div>
+        <div class="step-label">steps</div>
+      </div>
+      <div class="step-metrics">
+        <div class="step-metric">
+          <span class="step-metric-val" id="step-distance">0.00</span>
+          <span class="step-metric-label">km</span>
+        </div>
+        <div class="step-metric">
+          <span class="step-metric-val" id="step-calories">0</span>
+          <span class="step-metric-label">kcal</span>
+        </div>
+      </div>
+      <button class="save-btn" id="step-toggle-btn" onclick="toggleStepCounter()" style="background:var(--accent3)">Start counting</button>
+      <div class="step-status hidden" id="step-status"></div>
+    </div>
+
     <!-- Logger card -->
     <div class="card">
       <div class="section-title">Log activity</div>
@@ -988,6 +1031,25 @@
           oninput="this.value=this.value.replace(/[^0-9]/g,'')">
       </div>
       <button class="save-btn" onclick="saveProfile()">Save profile</button>
+    </div>
+
+    <!-- Daily energy / BMR -->
+    <div class="card hidden" id="bmr-card">
+      <div class="section-title">Daily energy 🔥</div>
+      <div id="bmr-stats"></div>
+    </div>
+
+    <!-- Weight goals -->
+    <div class="card hidden" id="weight-mgmt-card">
+      <div class="section-title">Weight goals 📊</div>
+      <div class="pfield">
+        <label>Target weight</label>
+        <div class="weight-wrap">
+          <input type="tel" id="target-weight" inputmode="decimal" placeholder="kg"
+            oninput="this.value=this.value.replace(/[^0-9.]/g,''); renderWeightGoals()">
+        </div>
+      </div>
+      <div id="weight-goals-display"></div>
     </div>
 
     <div id="rec-section" class="hidden">
@@ -1188,6 +1250,12 @@
     let athleticsOpen = false;
     let calcResult = null;
 
+    // Step counter state
+    let stepData = {};
+    let stepTracking = false;
+    let lastStepTime = 0;
+    let stepListener = null;
+
     const MOODS = ['💀','😓','😐','😊','🔥'];
 
     const THEMES = [
@@ -1254,6 +1322,7 @@
       try { planksData = JSON.parse(localStorage.getItem('planks'))         || {}; } catch { planksData = {}; }
       try { const pw  = JSON.parse(localStorage.getItem('planks_workout')); if (pw) planksWorkout = pw; } catch {}
       try { activityLog = JSON.parse(localStorage.getItem('activity_log')) || []; } catch { activityLog = []; }
+      try { stepData = JSON.parse(localStorage.getItem('step_counter')) || {}; } catch { stepData = {}; }
       try {
         const p = JSON.parse(localStorage.getItem('pushups_profile'));
         if (p) profile = { name:'', gender:'', age:'', height:'', weight:'', weightHistory:[], prs:[], planksGoal: null, planksPrs: [], ...p };
@@ -1269,6 +1338,7 @@
     function savePlanksData()    { localStorage.setItem('planks',          JSON.stringify(planksData)); }
     function savePlanksWorkout() { localStorage.setItem('planks_workout',  JSON.stringify(planksWorkout)); }
     function saveActivityLog()   { localStorage.setItem('activity_log',    JSON.stringify(activityLog)); }
+    function saveStepData()      { localStorage.setItem('step_counter',    JSON.stringify(stepData)); }
 
     // ── Tabs ──
     function switchTab(tab) {
@@ -1481,6 +1551,8 @@
       renderPRList();
       renderPlanksPRList();
       renderThemeGrid();
+      renderBMR();
+      renderWeightGoals();
     }
 
     function getAvgDaily() {
@@ -1802,18 +1874,34 @@
     // ── Activities ──
     function renderActivitiesPage() {
       renderActStats();
+      renderStepCounter();
       renderActPicker();
       renderActLog();
     }
 
+    function getStepTodayKcal() {
+      return (stepData[todayKey()] || {}).calories || 0;
+    }
+
+    function getStepWeekKcal() {
+      const cutoff = dateKey(new Date(Date.now() - 6 * 86400000));
+      let total = 0;
+      for (const [d, v] of Object.entries(stepData)) {
+        if (d >= cutoff) total += (v.calories || 0);
+      }
+      return total;
+    }
+
     function getActTodayKcal() {
       const today = todayKey();
-      return activityLog.filter(e => e.date === today).reduce((s, e) => s + e.calories, 0);
+      const logCal = activityLog.filter(e => e.date === today).reduce((s, e) => s + e.calories, 0);
+      return logCal + getStepTodayKcal();
     }
 
     function getActWeekKcal() {
       const cutoff = dateKey(new Date(Date.now() - 6 * 86400000));
-      return activityLog.filter(e => e.date >= cutoff).reduce((s, e) => s + e.calories, 0);
+      const logCal = activityLog.filter(e => e.date >= cutoff).reduce((s, e) => s + e.calories, 0);
+      return logCal + getStepWeekKcal();
     }
 
     function getActStreak() {
@@ -1889,6 +1977,7 @@
     async function handleCalculate() {
       const actName = selectedDiscipline || selectedActivity;
       if (!actName) { showToast('Select an activity first'); return; }
+      if (!profile.weight) showToast('Fill in your weight in Profile for accurate calories');
       const duration = parseInt(document.getElementById('act-duration').value, 10);
       if (!duration || duration <= 0) { showToast('Enter duration in minutes'); return; }
 
@@ -1996,6 +2085,242 @@
         el.appendChild(del);
         container.appendChild(el);
       });
+    }
+
+    // ── Step counter ──
+    function renderStepCounter() {
+      const today = stepData[todayKey()] || { steps: 0, distance: 0, calories: 0 };
+      document.getElementById('step-count-display').textContent = today.steps;
+      document.getElementById('step-distance').textContent = today.distance.toFixed(2);
+      document.getElementById('step-calories').textContent = today.calories;
+      const btn = document.getElementById('step-toggle-btn');
+      const status = document.getElementById('step-status');
+      if (stepTracking) {
+        btn.innerHTML = '<span class="step-active-indicator"></span>Stop counting';
+        status.classList.remove('hidden');
+        status.textContent = 'Tracking steps...';
+      } else {
+        btn.textContent = 'Start counting';
+        status.classList.add('hidden');
+      }
+    }
+
+    function updateStepDisplay() {
+      const today = stepData[todayKey()] || { steps: 0, distance: 0, calories: 0 };
+      document.getElementById('step-count-display').textContent = today.steps;
+      document.getElementById('step-distance').textContent = today.distance.toFixed(2);
+      document.getElementById('step-calories').textContent = today.calories;
+    }
+
+    function toggleStepCounter() {
+      if (stepTracking) {
+        stepTracking = false;
+        stopStepDetection();
+        saveStepData();
+        renderStepCounter();
+        renderActStats();
+      } else {
+        stepTracking = true;
+        startStepDetection();
+        renderStepCounter();
+      }
+    }
+
+    function startStepDetection() {
+      if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function') {
+        DeviceMotionEvent.requestPermission().then(function(response) {
+          if (response === 'granted') {
+            attachMotionListener();
+          } else {
+            showToast('Motion permission denied');
+            stepTracking = false;
+            renderStepCounter();
+          }
+        }).catch(function() {
+          showToast('Motion permission error');
+          stepTracking = false;
+          renderStepCounter();
+        });
+      } else if ('DeviceMotionEvent' in window) {
+        attachMotionListener();
+      } else {
+        showToast('Accelerometer not available on this device');
+        stepTracking = false;
+        renderStepCounter();
+      }
+    }
+
+    function attachMotionListener() {
+      const THRESHOLD = 1.2;
+      const COOLDOWN = 300;
+      let peakDetected = false;
+
+      stepListener = function(event) {
+        const acc = event.accelerationIncludingGravity;
+        if (!acc || acc.x === null) return;
+
+        const magnitude = Math.sqrt(acc.x * acc.x + acc.y * acc.y + acc.z * acc.z) / 9.81;
+        const now = Date.now();
+
+        if (magnitude > THRESHOLD && !peakDetected) {
+          peakDetected = true;
+        } else if (magnitude < THRESHOLD && peakDetected) {
+          peakDetected = false;
+          if (now - lastStepTime > COOLDOWN) {
+            lastStepTime = now;
+            recordStep();
+          }
+        }
+      };
+
+      window.addEventListener('devicemotion', stepListener);
+    }
+
+    function stopStepDetection() {
+      if (stepListener) {
+        window.removeEventListener('devicemotion', stepListener);
+        stepListener = null;
+      }
+    }
+
+    function recordStep() {
+      const today = todayKey();
+      if (!stepData[today]) {
+        stepData[today] = { steps: 0, distance: 0, calories: 0, lastUpdated: '' };
+      }
+      stepData[today].steps++;
+
+      const heightCm = parseFloat(profile.height) || 170;
+      const strideLengthM = (heightCm * 0.415) / 100;
+      stepData[today].distance = parseFloat((stepData[today].steps * strideLengthM / 1000).toFixed(2));
+
+      const weight = parseFloat(profile.weight) || 70;
+      stepData[today].calories = Math.round(stepData[today].steps * 0.04 * weight);
+
+      stepData[today].lastUpdated = new Date().toISOString();
+
+      if (stepData[today].steps % 10 === 0) {
+        saveStepData();
+      }
+
+      if (currentTab === 'activities') {
+        updateStepDisplay();
+        if (stepData[today].steps % 50 === 0) renderActStats();
+      }
+    }
+
+    // ── BMR / Weight goals ──
+    function calcBMR() {
+      const w = parseFloat(profile.weight);
+      const h = parseFloat(profile.height);
+      const a = parseInt(profile.age, 10);
+      const g = profile.gender;
+      if (!w || !h || !a || !g) return null;
+      return g === 'm'
+        ? (10 * w) + (6.25 * h) - (5 * a) + 5
+        : (10 * w) + (6.25 * h) - (5 * a) - 161;
+    }
+
+    function renderBMR() {
+      const card = document.getElementById('bmr-card');
+      const bmr = calcBMR();
+      if (!bmr) { card.classList.add('hidden'); return; }
+      card.classList.remove('hidden');
+
+      const actCal = getActTodayKcal();
+      const todayBurn = Math.round(bmr + actCal);
+
+      document.getElementById('bmr-stats').innerHTML = `
+        <div class="bmr-row">
+          <span class="bmr-label">BMR (base metabolism)</span>
+          <span class="bmr-value">${Math.round(bmr)} kcal</span>
+        </div>
+        <div class="bmr-row">
+          <span class="bmr-label">Today's total burn</span>
+          <span class="bmr-value bmr-highlight">${todayBurn} kcal</span>
+        </div>
+        <div class="bmr-note">BMR (${Math.round(bmr)}) + activity (${actCal}) logged today</div>
+        <div class="bmr-divider"></div>
+        <div class="bmr-row">
+          <span class="bmr-label">Sedentary (×1.2)</span>
+          <span class="bmr-value">${Math.round(bmr * 1.2)} kcal</span>
+        </div>
+        <div class="bmr-row">
+          <span class="bmr-label">Light active (×1.375)</span>
+          <span class="bmr-value">${Math.round(bmr * 1.375)} kcal</span>
+        </div>
+        <div class="bmr-row">
+          <span class="bmr-label">Moderate (×1.55)</span>
+          <span class="bmr-value">${Math.round(bmr * 1.55)} kcal</span>
+        </div>
+        <div class="bmr-row">
+          <span class="bmr-label">Active (×1.725)</span>
+          <span class="bmr-value">${Math.round(bmr * 1.725)} kcal</span>
+        </div>
+        <div class="bmr-row">
+          <span class="bmr-label">Very active (×1.9)</span>
+          <span class="bmr-value">${Math.round(bmr * 1.9)} kcal</span>
+        </div>
+      `;
+    }
+
+    function renderWeightGoals() {
+      const card = document.getElementById('weight-mgmt-card');
+      const display = document.getElementById('weight-goals-display');
+      const bmr = calcBMR();
+      if (!bmr) { card.classList.add('hidden'); return; }
+      card.classList.remove('hidden');
+
+      const w = parseFloat(profile.weight);
+      const g = profile.gender;
+      const tdee = Math.round(bmr * 1.55);
+      const minCal = g === 'f' ? 1200 : 1500;
+      const targetW = parseFloat(document.getElementById('target-weight').value);
+
+      let html = `
+        <div class="bmr-row">
+          <span class="bmr-label">Maintain weight</span>
+          <span class="bmr-value">${tdee} kcal/day</span>
+        </div>
+      `;
+
+      if (!targetW) {
+        html += '<div class="bmr-note">Enter target weight to see plans</div>';
+      } else {
+        const diff = targetW - w;
+        if (Math.abs(diff) < 0.1) {
+          html += '<div class="bmr-note">You\'re at your target weight!</div>';
+        } else {
+          const isLoss = diff < 0;
+          const kgDiff = Math.abs(diff);
+          const tiers = isLoss
+            ? [
+                { label: 'Mild loss', rate: 0.25, adj: -275 },
+                { label: 'Normal loss', rate: 0.5, adj: -550 },
+                { label: 'Fast loss', rate: 1.0, adj: -1100 },
+              ]
+            : [
+                { label: 'Mild gain', rate: 0.25, adj: 275 },
+                { label: 'Normal gain', rate: 0.5, adj: 550 },
+                { label: 'Fast gain', rate: 1.0, adj: 1100 },
+              ];
+
+          tiers.forEach(function(t) {
+            const dailyCal = tdee + t.adj;
+            const weeks = Math.ceil(kgDiff / t.rate);
+            const warning = dailyCal < minCal;
+            html += `
+              <div class="bmr-row${warning ? ' wm-warning' : ''}">
+                <span class="bmr-label">${t.label} (${isLoss ? '-' : '+'}${t.rate} kg/wk)</span>
+                <span class="bmr-value">${dailyCal} kcal/day</span>
+              </div>
+              <div class="wm-eta">${weeks} week${weeks !== 1 ? 's' : ''} to reach ${targetW} kg${warning ? ' ⚠️ below safe minimum!' : ''}</div>
+            `;
+          });
+        }
+      }
+
+      display.innerHTML = html;
     }
 
     // ── Workout ──
@@ -2350,6 +2675,10 @@
     planksSelectedKey = todayKey();
     renderHome();
     initNotifications();
+
+    // Save step data on background / close
+    window.addEventListener('beforeunload', function() { if (stepTracking) saveStepData(); });
+    document.addEventListener('visibilitychange', function() { if (document.hidden && stepTracking) saveStepData(); });
   </script>
 </body>
 </html>
