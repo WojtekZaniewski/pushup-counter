@@ -757,7 +757,8 @@
     .step-metric { flex: 1; background: var(--surface2); border-radius: 8px; padding: 0.5rem; text-align: center; }
     .step-metric-val { font-size: 1.1rem; font-weight: 700; color: var(--accent3); display: block; }
     .step-metric-label { font-size: 0.55rem; color: var(--text3); text-transform: uppercase; letter-spacing: 0.08em; }
-    .step-status { font-size: 0.65rem; color: var(--text2); text-align: center; margin-top: 0.5rem; }
+    .step-status { font-size: 0.65rem; color: var(--text2); text-align: center; margin-bottom: 0.5rem; }
+    .step-pause-btn { background: none; border: 1px solid var(--border); border-radius: 6px; color: var(--text3); font-family: inherit; font-size: 0.6rem; padding: 0.3rem 0.8rem; cursor: pointer; display: block; margin: 0 auto; text-transform: uppercase; letter-spacing: 0.08em; }
     @keyframes pulse-dot { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
     .step-active-indicator { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--accent3); animation: pulse-dot 1.2s ease-in-out infinite; margin-right: 0.35rem; vertical-align: middle; }
 
@@ -930,8 +931,8 @@
           <span class="step-metric-label">kcal</span>
         </div>
       </div>
-      <button class="save-btn" id="step-toggle-btn" onclick="toggleStepCounter()" style="background:var(--accent3)">Start counting</button>
-      <div class="step-status hidden" id="step-status"></div>
+      <div class="step-status" id="step-status"><span class="step-active-indicator"></span>Always tracking</div>
+      <button class="step-pause-btn" id="step-toggle-btn" onclick="toggleStepCounter()">Pause</button>
     </div>
 
     <!-- Logger card -->
@@ -2096,12 +2097,11 @@
       const btn = document.getElementById('step-toggle-btn');
       const status = document.getElementById('step-status');
       if (stepTracking) {
-        btn.innerHTML = '<span class="step-active-indicator"></span>Stop counting';
-        status.classList.remove('hidden');
-        status.textContent = 'Tracking steps...';
+        status.innerHTML = '<span class="step-active-indicator"></span>Always tracking';
+        btn.textContent = 'Pause';
       } else {
-        btn.textContent = 'Start counting';
-        status.classList.add('hidden');
+        status.innerHTML = 'Paused';
+        btn.textContent = 'Resume';
       }
     }
 
@@ -2676,9 +2676,19 @@
     renderHome();
     initNotifications();
 
+    // Auto-start step counter
+    stepTracking = true;
+    startStepDetection();
+
     // Save step data on background / close
     window.addEventListener('beforeunload', function() { if (stepTracking) saveStepData(); });
-    document.addEventListener('visibilitychange', function() { if (document.hidden && stepTracking) saveStepData(); });
+    document.addEventListener('visibilitychange', function() {
+      if (document.hidden && stepTracking) {
+        saveStepData();
+      } else if (!document.hidden && stepTracking && !stepListener) {
+        startStepDetection();
+      }
+    });
   </script>
 </body>
 </html>
